@@ -1,0 +1,211 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id            Int            @id @default(autoincrement())
+  name          String
+  categoryId    Int?
+  category      Category?      @relation(fields: [categoryId], references: [id])
+  model         String
+  ampereHours   Float?
+  brand         String
+  saleItems     SaleItem[]
+  purchaseItems PurchaseItem[]
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  deletedAt     DateTime?
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  isActive  Boolean   @default(true)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Entity {
+  id           Int           @id @default(autoincrement())
+  name         String
+  type         EntityType
+  customerType CustomerType?
+  contact      String?
+  email        String?
+  address      String?
+  sales        Sale[]
+  purchases    Purchase[]
+  ledger       LedgerEntry[]
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deletedAt    DateTime?
+}
+
+enum EntityType {
+  CUSTOMER
+  SUPPLIER
+}
+
+enum CustomerType {
+  INDIVIDUAL
+  SHOPOWNER
+}
+
+model Sale {
+  id                Int           @id @default(autoincrement())
+  entityId          Int?
+  customer          Entity?       @relation(fields: [entityId], references: [id])
+  totalAmount       Float
+  paymentMethod     PaymentMethod
+  receivedAmount    Float
+  receiptNumber     String?       @unique
+  saleItems         SaleItem[]
+  discount          Float         @default(0)
+  proofOfPayment    String?
+  debtRepaymentDate DateTime?
+  isActive          Boolean       @default(true)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  deletedAt         DateTime?
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CREDIT_CARD
+  DIGITAL_WALLET
+}
+
+model SaleItem {
+  id             Int          @id @default(autoincrement())
+  saleId         Int
+  sale           Sale         @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId      Int
+  product        Product      @relation(fields: [productId], references: [id])
+  quantity       Int
+  salePrice      Float
+  totalPrice     Float
+  purchaseItemId Int
+  purchaseItem   PurchaseItem @relation(fields: [purchaseItemId], references: [id])
+  warranty       Warranty?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+}
+
+model Purchase {
+  id              Int            @id @default(autoincrement())
+  entityId        Int?
+  supplier        Entity?        @relation(fields: [entityId], references: [id])
+  totalAmount     Float
+  paymentMethod   PaymentMethod
+  paidAmount      Float
+  purchaseItems   PurchaseItem[]
+  proofOfPurchase String? // URL or path to the image
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+}
+
+model PurchaseItem {
+  id              Int        @id @default(autoincrement())
+  purchaseId      Int
+  purchase        Purchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  productId       Int
+  product         Product    @relation(fields: [productId], references: [id])
+  initialQuantity Int
+  soldQuantity    Int        @default(0)
+  unitPrice       Float
+  salePrice       Float
+  barcode         String     @unique
+  saleItem        SaleItem[]
+  warranty        Warranty?
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+}
+
+model Warranty {
+  id                       Int            @id @default(autoincrement())
+  saleItemId               Int?           @unique
+  saleItem                 SaleItem?      @relation(fields: [saleItemId], references: [id])
+  purchaseItemId           Int?           @unique
+  purchaseItem             PurchaseItem?  @relation(fields: [purchaseItemId], references: [id])
+  status                   WarrantyStatus @default(ACTIVE)
+  retailerWarrantyDuration Float
+  customerWarrantyDuration Float
+  isActive                 Boolean        @default(true)
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+  deletedAt                DateTime?
+  claims                   Claim[] // Multiple claims associated with a warranty
+}
+
+model Claim {
+  id                 Int         @id @default(autoincrement())
+  warrantyId         Int
+  warranty           Warranty    @relation(fields: [warrantyId], references: [id], onDelete: Cascade)
+  claimType          ClaimType
+  claimStatus        ClaimStatus
+  claimDate          DateTime
+  claimQuantity      Int
+  claimDetails       String
+  claimResolveDate   DateTime?
+  claimResolveDetail String?
+  claimRejectDate    DateTime?
+  claimRejectDetail  String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @default(now())
+  deletedAt          DateTime?
+}
+
+enum WarrantyStatus {
+  ACTIVE
+  EXPIRED
+}
+
+enum ClaimType {
+  CUSTOMER
+  SUPPLIER
+}
+
+enum ClaimStatus {
+  PENDING
+  RESOLVED
+  REJECTED
+}
+
+model LedgerEntry {
+  id              Int      @id @default(autoincrement())
+  entityId        Int
+  entity          Entity   @relation(fields: [entityId], references: [id])
+  description     String
+  totalAmount     Float    @default(0)
+  receivedAmount  Float    @default(0)
+  remainingAmount Float    @default(0)
+  overpaidAmount  Float    @default(0)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
