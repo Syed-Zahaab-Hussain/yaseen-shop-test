@@ -8,7 +8,7 @@ import { fetchSaleById } from "@/lib/api";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { useToast } from "@/hooks/use-toast";
 
-const SHOP_NAME_URDU = "یسین بیٹری زون انٹرپرائزس سنٹر";
+const SHOP_NAME_URDU = "یسین بیٹری زون ";
 const SHOP_NAME_ENG = "YASEEN BATTERY ZONE";
 const SHOP_SUBTITLE = "(الیکٹرک سائیکل اینڈ بلاسٹر)";
 const SHOP_INFO = "نئین چوک ڈیری شلوچستان";
@@ -89,10 +89,6 @@ export default function Receipt() {
           >
             {SHOP_NAME_URDU}
           </h2>
-          <p style={{ fontFamily: "Noto Nastaliq Urdu, serif" }}>
-            {SHOP_SUBTITLE}
-          </p>
-          <p style={{ fontFamily: "Noto Nastaliq Urdu, serif" }}>{SHOP_INFO}</p>
           <div className="flex justify-center space-x-4 mt-2">
             {MOBILE_NUMBERS.map((number) => (
               <span key={number} className="text-sm">

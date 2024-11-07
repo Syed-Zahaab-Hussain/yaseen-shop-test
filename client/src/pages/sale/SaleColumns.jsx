@@ -7,7 +7,19 @@ export const getColumns = () => [
   },
   {
     accessorKey: "customer.name",
-    header: "Customer",
+    header: "Name",
+    cell: ({ row }) => {
+      const name = row.original.customer.name;
+      return name ? name : "-";
+    },
+  },
+  {
+    accessorKey: "customer.contact",
+    header: "Contact Number",
+    cell: ({ row }) => {
+      const contact = row.original.customer.contact;
+      return contact ? contact : "-";
+    },
   },
 
   {

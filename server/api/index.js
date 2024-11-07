@@ -23,7 +23,7 @@ import ledgerRoute from "./routes/ledgerRoute.js";
 
 // ----------------------------------------------------------------
 
-const allowedDomains = process.env.VITE_BASE_URL.split(",");
+const allowedDomains = process.env.BASE_URL.split(",");
 const prisma = new PrismaClient({
   transactionOptions: {
     isolationLevel: "ReadCommitted",
@@ -88,15 +88,15 @@ app.use(
 // const __dirname = path.resolve();
 // app.use(express.static(path.join(__dirname, "/client/dist")));
 
-app.use("/auth", authRoute);
-app.use("/category", verifyJWT, categoryRoute);
-app.use("/product", verifyJWT, productRoute);
-app.use("/purchase", verifyJWT, purchaseRoute);
-app.use("/supplier", verifyJWT, supplierRoute);
-app.use("/warranty", verifyJWT, warrantyRoute);
-app.use("/customer", verifyJWT, customerRoute);
-app.use("/sale", verifyJWT, salesRoute);
-app.use("/ledger", verifyJWT, ledgerRoute);
+app.use("api/auth", authRoute);
+app.use("api/category", verifyJWT, categoryRoute);
+app.use("api/product", verifyJWT, productRoute);
+app.use("api/purchase", verifyJWT, purchaseRoute);
+app.use("api/supplier", verifyJWT, supplierRoute);
+app.use("api/warranty", verifyJWT, warrantyRoute);
+app.use("api/customer", verifyJWT, customerRoute);
+app.use("api/sale", verifyJWT, salesRoute);
+app.use("api/ledger", verifyJWT, ledgerRoute);
 
 // app.get("*", function (req, res) {
 //   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));

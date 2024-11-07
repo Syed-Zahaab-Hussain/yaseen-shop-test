@@ -342,7 +342,7 @@ const AddPurchaseDialog = ({ isOpen, onClose }) => {
                   <div>
                     <Input
                       type="number"
-                      placeholder="Unit Price"
+                      placeholder="Cost price"
                       value={item.unitPrice}
                       onChange={(e) =>
                         handleItemChange(index, "unitPrice", e.target.value)
