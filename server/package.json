@@ -4,8 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node netlify/functions/index.js",
-    "dev": "nodemon netlify/functions/index.js",
+    "start": "node netlify/functions/api.js",
+    "dev": "nodemon netlify/functions/api.js",
     "build": "npm install && npx prisma generate"
   },
   "keywords": [],
