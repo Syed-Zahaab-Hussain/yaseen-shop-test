@@ -27,7 +27,7 @@ axiosInstance.interceptors.response.use(
 // ==========================================================================
 export const checkAuth = async () => {
   try {
-    const response = await publicInstance.get("/auth/check");
+    const response = await axiosInstance.get("/auth/check");
 
     return response.data.isAuthenticated;
   } catch (error) {

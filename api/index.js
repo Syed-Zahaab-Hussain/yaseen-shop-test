@@ -1,6 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import path from "path";
+// import path from "path";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import "dotenv/config";
@@ -23,6 +23,7 @@ import ledgerRoute from "./routes/ledgerRoute.js";
 
 // ----------------------------------------------------------------
 
+const allowedDomains = process.env.VITE_BASE_URL.split(",");
 const prisma = new PrismaClient({
   transactionOptions: {
     isolationLevel: "ReadCommitted",
@@ -37,7 +38,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.VITE_BASE_URL,
+    origin: allowedDomains,
     credentials: true,
   })
 );

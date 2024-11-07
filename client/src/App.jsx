@@ -83,12 +83,13 @@ function App() {
       <ErrorBoundary>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route path="/" element={<Navigate to="/home" replace />} />
             {/* Login route */}
             <Route path="login" element={<LazyComponent component={Login} />} />
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<Navigate to="/home" replace />} />
+
               <Route path="home" element={<LazyComponent component={Home} />} />
               <Route
                 path="products"
