@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import "dotenv/config";
+import serverless from "serverless-http";
 
 // ----------------------------------------------------------------
 
@@ -103,6 +104,7 @@ app.use("/api/ledger", verifyJWT, ledgerRoute);
 // app.get("*", function (req, res) {
 //   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
 // });
+export const handler = serverless(app);
 
 // ----------------------------------------------------------------
 
