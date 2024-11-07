@@ -97,6 +97,7 @@ router.get("/get/all", async (req, res) => {
         }
       }
     }
+    // console.log(purchases);
 
     res.json(purchases || []);
   } catch (error) {

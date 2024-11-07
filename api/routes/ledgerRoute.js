@@ -14,32 +14,65 @@ let date = dateObject.toISOString();
 // -----------------------------------------------------------------------------------------
 
 // ---------------------Get all the customers info along with their transactions---------------
+// router.get("/get/all", async (req, res) => {
+//   try {
+//     const { startDate, endDate } = req.query;
+
+//     let dateFilter = {};
+//     if (startDate && endDate) {
+//       createdAt = {
+//         date: {
+//           gte: parseISO(startDate),
+//           lte: parseISO(endDate),
+//         },
+//       };
+//     }
+
+//     const ledgerEntries = await prisma.ledgerEntry.findMany({
+//       where: {
+//         isActive: true,
+//         ...dateFilter,
+//       },
+//       include: {
+//         entity: { where: { isActive: true } },
+//       },
+//     });
+
+//     res.json(ledgerEntries || []);
+//     console.log(ledgerEntries);
+//   } catch (error) {
+//     res.status(500).json({ error: "Failed to retrieve ledger info" });
+//   }
+// });
+
 router.get("/get/all", async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
     let dateFilter = {};
     if (startDate && endDate) {
-      createdAt = {
-        date: {
-          gte: parseISO(startDate),
-          lte: parseISO(endDate),
-        },
+      dateFilter.createdAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
       };
     }
 
     const ledgerEntries = await prisma.ledgerEntry.findMany({
       where: {
         isActive: true,
+        entity: {
+          isActive: true,
+        },
         ...dateFilter,
       },
       include: {
-        entity: { where: { isActive: true } },
+        entity: true,
       },
     });
 
     res.json(ledgerEntries || []);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to retrieve ledger info" });
   }
 });

@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
+import "dotenv/config";
 
 // ----------------------------------------------------------------
 
@@ -83,8 +84,8 @@ initializeDatabase()
 
 // ----------------------------------------------------------------
 
-// const __dirname = path.resolve();
-// app.use(express.static(path.join(__dirname, "/client/dist")));
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, "/client/dist")));
 
 app.use("/auth", authRoute);
 app.use("/category", verifyJWT, categoryRoute);
@@ -96,9 +97,9 @@ app.use("/customer", verifyJWT, customerRoute);
 app.use("/sale", verifyJWT, salesRoute);
 app.use("/ledger", verifyJWT, ledgerRoute);
 
-// app.get("*", function (req, res) {
-//   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
-// });
+app.get("*", function (req, res) {
+  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+});
 
 // ----------------------------------------------------------------
 

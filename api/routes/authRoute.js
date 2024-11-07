@@ -104,8 +104,8 @@ router.post("/login", async (req, res) => {
       { email: user.email },
       process.env.JWT_TOKEN_SECRET,
       // { expiresIn: "1m" }
-      { expiresIn: "5m" }
-      // { expiresIn: "1h" }
+      // { expiresIn: "5m" }
+      { expiresIn: "1h" }
       // { expiresIn: "1d" }
     );
 
@@ -113,8 +113,8 @@ router.post("/login", async (req, res) => {
       httpOnly: true,
       sameSite: "strict",
       // maxAge: 1 * 60 * 1000, // 1 min
-      maxAge: 5 * 60 * 1000, // 5 min
-      // maxAge: 60 * 60 * 1000, // 1 hours
+      // maxAge: 5 * 60 * 1000, // 5 min
+      maxAge: 60 * 60 * 1000, // 1 hours
       // maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
