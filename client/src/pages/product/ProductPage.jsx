@@ -25,7 +25,7 @@ const ProductPage = () => {
   } = useQuery({
     queryKey: ["products"],
     queryFn: fetchProducts,
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    // staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
     retry: 2, // Retry failed requests twice
   });
 

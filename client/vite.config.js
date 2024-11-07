@@ -15,14 +15,10 @@ export default defineConfig({
       output: {
         manualChunks: {
           "vendor-react": ["react", "react-dom", "react-router-dom"],
-          "vendor-auth": ["./src/lib/useAuth", "./src/lib/axios"],
+          "vendor-auth": ["./src/lib/useAuth"],
         },
       },
     },
     chunkSizeWarningLimit: 1000,
   },
-  // server: {
-  //   open: true,
-  //   port: 3000,
-  // },
 });

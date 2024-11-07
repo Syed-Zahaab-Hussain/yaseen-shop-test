@@ -31,7 +31,6 @@ const CategoryPage = () => {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
     retry: 2, // Retry failed requests twice
   });
 

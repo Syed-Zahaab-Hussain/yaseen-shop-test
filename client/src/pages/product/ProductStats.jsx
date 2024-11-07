@@ -9,7 +9,7 @@ const ProductStats = ({ products, error }) => {
     if (!products) return null;
 
     try {
-    // Calculate total value from PurchaseItems
+      // Calculate total value from PurchaseItems
       const totalValue = products.reduce((sum, product) => {
         const purchaseItems = product.purchaseItems || [];
         return (
@@ -82,9 +82,7 @@ const ProductStats = ({ products, error }) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{statsData.totalProducts}</div>
-          <p className="text-xs text-gray-500 mt-1">
-            Active products in inventory
-          </p>
+          <p className="text-xs text-gray-500 mt-1">Products in inventory</p>
         </CardContent>
       </Card>
 

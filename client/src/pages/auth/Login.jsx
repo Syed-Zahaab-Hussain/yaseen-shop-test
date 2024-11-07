@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +11,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { publicApi } from "@/lib/axios";
+import { publicInstance } from "@/lib/api";
 import useAuth from "@/lib/useAuth";
 
 const Login = () => {
@@ -22,7 +21,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
-  const { setUser, setToken } = useAuth();
+  const { setUser } = useAuth();
 
   const validateEmail = (email) => {
     const re = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
@@ -50,13 +49,11 @@ const Login = () => {
     if (!newErrors.email && !newErrors.password) {
       try {
         setLoading(true);
-        const { data } = await publicApi.post("/auth/login", {
+        const { data } = await publicInstance.post("/auth/login", {
           email,
           password,
         });
-        // console.log(data);
         setUser(data.userInfo);
-        setToken(data.accessToken);
         setLoading(false);
         navigate("/home");
       } catch (error) {
@@ -122,11 +119,7 @@ const Login = () => {
               )}
             </div>
             <Button type="submit" className="w-full">
-              {loading ? (
-               "loading..."
-              ) : (
-                "Log In"
-              )}
+              {loading ? "loading..." : "Log In"}
             </Button>
           </form>
         </CardContent>

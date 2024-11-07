@@ -35,7 +35,7 @@ const EditPurchaseItemDialog = ({ isOpen, onClose, purchaseItem }) => {
     queryFn: fetchProducts,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   //   mutationFn: async (data) => {

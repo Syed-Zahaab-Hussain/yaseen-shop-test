@@ -11,8 +11,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { LoadingSpinner } from "@/components/LoadingSpinner";
-import { publicApi } from "@/lib/axios";
+import { publicInstance } from "@/lib/api";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -51,7 +50,7 @@ const Register = () => {
     if (!newErrors.email && !newErrors.password && !newErrors.username) {
       try {
         setLoading(true);
-        await publicApi.post("/auth/register", {
+        await publicInstance.post("/auth/register", {
           username,
           email,
           password,

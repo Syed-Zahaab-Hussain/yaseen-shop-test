@@ -6,47 +6,34 @@ import { PrismaClient } from "@prisma/client";
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// --------------------------Verify existing User Token on every request---------------------------------------
+router.get("/check", (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ isAuthenticated: false });
+    }
 
-router.get("/check-user", (req, res) => {
-  prisma.user
-    .findUnique({
-      where: { id: 1001 },
-    })
-    .then((user) => {
-      if (user) {
-        res.status(200).json(true);
-      } else {
-        res.status(200).json(false);
+    jwt.verify(token, process.env.JWT_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ isAuthenticated: false });
       }
-    })
-    .catch((err) => {
-      console.log(err);
 
-      res.status(404).json(false);
+      return res.status(200).json({ isAuthenticated: true });
     });
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return res.status(401).json({ isAuthenticated: false });
+  }
 });
 
 export const verifyJWT = async (req, res, next) => {
   try {
-    // console.log("verify JWT middleware");
+    const token = req.cookies.token;
+    // console.log(req);
 
-    // console.log("Token: ", req.headers.authorization);
+    if (!token) return res.status(401).json({ message: "Unauthorized" });
 
-    const authHeader = req.headers.authorization;
-    // console.log(authHeader);
-
-    if (!authHeader?.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const token = authHeader.split(" ")[1];
-
-    if (!token) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    jwt.verify(token, process.env.JWT_TOKEN_SECRET, (err, decoded) => {
       if (err) {
         return res.status(403).json({ message: "Forbidden" });
       }
@@ -58,8 +45,6 @@ export const verifyJWT = async (req, res, next) => {
     res.status(401).json({ error: "Invalid or expired token" });
   }
 };
-
-// --------------------------Register new User----------------------------------------------------
 
 router.post("/register", async (req, res) => {
   try {
@@ -92,12 +77,9 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// --------------------------Login existing User----------------------------------------------------
-
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    // console.log(email, password);
 
     if (!email || !password) {
       return res.status(400).json({ message: "All fields are required" });
@@ -118,35 +100,30 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    const accessToken = jwt.sign(
-      { email: user.email, role: user.role },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "15m" }
-      // { expiresIn: "1m" }
-    );
-
-    const refreshToken = jwt.sign(
+    const token = jwt.sign(
       { email: user.email },
-      process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "1h" }
-      // { expiresIn: "5m" }
+      process.env.JWT_TOKEN_SECRET,
+      // { expiresIn: "1m" }
+      { expiresIn: "5m" }
+      // { expiresIn: "1h" }
+      // { expiresIn: "1d" }
     );
 
-    res.cookie("token", refreshToken, {
+    res.cookie("token", token, {
       httpOnly: true,
       sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      // maxAge: 5 * 60 * 1000, // 5 min
+      // maxAge: 1 * 60 * 1000, // 1 min
+      maxAge: 5 * 60 * 1000, // 5 min
+      // maxAge: 60 * 60 * 1000, // 1 hours
+      // maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
     res.status(200).json({
       message: "User logged in successfully",
-      accessToken,
       userInfo: {
         id: user.id,
         username: user.username,
         email: user.email,
-        role: user.role,
       },
     });
   } catch (error) {
@@ -155,40 +132,9 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// --------------------------Sending access-token after expiring---------------------------------------
-
-router.get("/refresh-token", async (req, res) => {
-  try {
-    const refreshToken = req.cookies.token;
-    // console.log(req);
-
-    if (!refreshToken) return res.status(401).json({ message: "Unauthorized" });
-
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-
-    const user = await prisma.user.findUnique({
-      where: { email: decoded.email },
-    });
-
-    if (!user) return res.status(401).json({ message: "Unauthorized" });
-
-    const accessToken = jwt.sign(
-      { email: user.email, role: user.role },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "15m" }
-    );
-
-    res.json({ accessToken });
-  } catch (error) {
-    console.error("Authentication error:", error);
-    res.status(401).json({ message: "Unauthorized" });
-  }
-});
-
-// --------------------------LogOut existing User----------------------------------------------------
-
 router.delete("/logout", async (req, res) => {
   const { token } = req.cookies;
+
   if (!token) return res.sendStatus(204); // No content
   res.clearCookie("token", { httpOnly: true, sameSite: "strict" });
   res.status(200).json({ message: "User logged out successfully" });

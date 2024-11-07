@@ -34,7 +34,7 @@ router.get("/get/all", async (req, res) => {
         ...dateFilter,
       },
       include: {
-        entity: true,
+        entity: { where: { isActive: true } },
       },
     });
 

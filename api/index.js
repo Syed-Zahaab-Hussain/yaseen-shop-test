@@ -1,7 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import cors from "cors";
 import path from "path";
+import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 
 // ----------------------------------------------------------------
@@ -15,6 +15,10 @@ import categoryRoute from "./routes/categoryRoute.js";
 import customerRoute from "./routes/customerRoute.js";
 import salesRoute from "./routes/salesRoute.js";
 import ledgerRoute from "./routes/ledgerRoute.js";
+// Seeds
+// import seedCategories from "./seed/seedCategories.js";
+// import seedSuppliers from "./seed/seedSuppliers.js";
+// import seedProducts from "./seed/seedProducts&User.js";
 
 // ----------------------------------------------------------------
 
@@ -32,8 +36,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: process.env.VITE_BASE_URL,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: ["http://localhost:5173"],
     credentials: true,
   })
 );
@@ -58,6 +61,17 @@ async function initializeDatabase() {
     await prisma.$executeRaw`ALTER SEQUENCE "Claim_id_seq" RESTART WITH 1001;`;
     await prisma.$executeRaw`ALTER SEQUENCE "LedgerEntry_id_seq" RESTART WITH 1001;`;
     console.log("Database initialized with custom sequence start value.");
+
+    // const seedCategoriesResult = await seedCategories();
+    // if (seedCategoriesResult) console.log("Categories seeded successfully.");
+
+    // const seedSuppliersResult = await seedSuppliers();
+    // if (seedSuppliersResult) console.log("Suppliers seeded successfully.");
+
+    // const seedProductsResult = await seedProducts();
+    // if (seedProductsResult) console.log("Products seeded successfully.");
+  } else {
+    console.log("Database already initialized.");
   }
 }
 
@@ -69,8 +83,8 @@ initializeDatabase()
 
 // ----------------------------------------------------------------
 
-const __dirname = path.resolve();
-app.use(express.static(path.join(__dirname, "/client/dist")));
+// const __dirname = path.resolve();
+// app.use(express.static(path.join(__dirname, "/client/dist")));
 
 app.use("/auth", authRoute);
 app.use("/category", verifyJWT, categoryRoute);
@@ -82,9 +96,10 @@ app.use("/customer", verifyJWT, customerRoute);
 app.use("/sale", verifyJWT, salesRoute);
 app.use("/ledger", verifyJWT, ledgerRoute);
 
-app.get("*", function (req, res) {
-  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
-});
+// app.get("*", function (req, res) {
+//   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+// });
+
 // ----------------------------------------------------------------
 
 const PORT = process.env.PORT || 3000;

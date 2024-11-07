@@ -26,7 +26,7 @@ const PurchasePage = () => {
   } = useQuery({
     queryKey: ["purchases", {}], // Passing an empty object for consistency
     queryFn: fetchPurchases,
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    // staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
     retry: 2, // Retry failed requests twice
   });
 

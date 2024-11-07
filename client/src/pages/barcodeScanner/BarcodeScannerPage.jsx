@@ -30,6 +30,7 @@ export default function BarcodeScannerPage() {
   const [change, setChange] = useState(0);
   const [debt, setDebt] = useState(0);
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -54,6 +55,7 @@ export default function BarcodeScannerPage() {
     },
   });
 
+  // console.log(isLoading);
   const resetForm = () => {
     setScannedProducts([]);
     setCustomerInfo({
@@ -110,6 +112,22 @@ export default function BarcodeScannerPage() {
   };
 
   const handleCompleteTransaction = async () => {
+    // Early return if basic validations fail
+    if (
+      scannedProducts.length === 0 ||
+      finalAmount <= 0 ||
+      !customerInfo.name.trim() ||
+      !receivedAmount ||
+      parseFloat(receivedAmount) <= 0
+    ) {
+      toast({
+        title: "Validation Error",
+        description: "Please check all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!validateTransaction()) {
       toast({
         title: "Validation Error",
@@ -118,6 +136,8 @@ export default function BarcodeScannerPage() {
       });
       return;
     }
+
+    setIsLoading(true);
 
     const transaction = {
       saleItems: scannedProducts.map((item) => ({
@@ -141,8 +161,12 @@ export default function BarcodeScannerPage() {
       debt: parseFloat(debt) || 0,
       date: new Date().toISOString(),
     };
-    // console.log(transaction);
-    await completeMutation.mutateAsync(transaction);
+    // Use mutateAsync to properly handle the loading state
+    try {
+      await completeMutation.mutateAsync(transaction);
+    } catch (error) {
+      setIsLoading(false);
+    }
   };
 
   const handleProductScanned = (product) => {
@@ -241,11 +265,7 @@ export default function BarcodeScannerPage() {
           <h1 className="text-3xl font-bold text-gray-900">
             Point of Sale System
           </h1>
-          <Button
-            variant="outline"
-            onClick={resetForm}
-            disabled={completeMutation.isLoading}
-          >
+          <Button variant="outline" onClick={resetForm} disabled={isLoading}>
             Clear Form
           </Button>
         </div>
@@ -270,13 +290,13 @@ export default function BarcodeScannerPage() {
             <CardContent>
               <BarcodeScanner
                 onProductScanned={handleProductScanned}
-                disabled={completeMutation.isLoading}
+                disabled={isLoading}
               />
               <ProductList
                 products={scannedProducts}
                 onQuantityChange={handleQuantityChange}
                 onRemoveProduct={handleRemoveProduct}
-                disabled={completeMutation.isLoading}
+                disabled={isLoading}
               />
               <div className="mt-4 space-y-2">
                 <div className="text-right text-lg">
@@ -297,7 +317,7 @@ export default function BarcodeScannerPage() {
               customerInfo={customerInfo}
               onCustomerInfoChange={setCustomerInfo}
               errors={errors}
-              disabled={completeMutation.isLoading}
+              disabled={isLoading}
             />
             <PaymentForm
               paymentMethod={paymentMethod}
@@ -309,22 +329,15 @@ export default function BarcodeScannerPage() {
               change={change}
               debt={debt}
               errors={errors}
-              disabled={completeMutation.isLoading}
+              disabled={isLoading}
             />
             <Button
               className="w-full"
               size="lg"
               onClick={handleCompleteTransaction}
-              disabled={
-                completeMutation.isLoading ||
-                scannedProducts.length === 0 ||
-                finalAmount <= 0 ||
-                !customerInfo.name.trim() ||
-                !receivedAmount ||
-                parseFloat(receivedAmount) <= 0
-              }
+              disabled={isLoading}
             >
-              {completeMutation.isLoading ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Processing...

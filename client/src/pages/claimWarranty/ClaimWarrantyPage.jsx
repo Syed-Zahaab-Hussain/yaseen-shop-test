@@ -29,7 +29,6 @@ const ClaimWarrantyPage = () => {
   } = useQuery({
     queryKey: ["claimWarranties"],
     queryFn: fetchClaimWarranties,
-    staleTime: 1000 * 60 * 5,
     retry: 2,
   });
 

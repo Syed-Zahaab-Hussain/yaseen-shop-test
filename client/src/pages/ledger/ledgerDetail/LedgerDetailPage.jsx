@@ -10,6 +10,7 @@ import { getColumns } from "./LedgerDetailColumns";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PieChart } from "@/components/charts/Charts";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 const LedgerDetailPage = () => {
   const { id } = useParams();
@@ -27,21 +28,7 @@ const LedgerDetailPage = () => {
     retry: 2,
   });
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-4 space-y-4">
-        <div className="flex items-center space-x-2">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Loading entity details...</span>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Skeleton className="h-[300px] w-full" />
-          <Skeleton className="h-[300px] w-full" />
-        </div>
-        <Skeleton className="h-[400px] w-full" />
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingSpinner />;
 
   if (isError) {
     return (

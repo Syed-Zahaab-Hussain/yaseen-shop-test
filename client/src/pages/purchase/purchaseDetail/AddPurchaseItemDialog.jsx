@@ -44,7 +44,7 @@ const AddPurchaseItemDialog = ({ isOpen, onClose, purchaseId }) => {
     queryKey: ["products"],
     queryFn: fetchProducts,
     retry: 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const addItemMutation = useMutation({

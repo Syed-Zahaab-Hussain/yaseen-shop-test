@@ -14,7 +14,9 @@ router.get("/get/all", async (req, res) => {
     const categories = await prisma.category.findMany({
       where: { isActive: true },
       include: {
-        products: true,
+        products: {
+          where: { isActive: true },
+        },
       },
     });
     // console.log(categories);

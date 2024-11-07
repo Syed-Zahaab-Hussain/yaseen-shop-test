@@ -60,25 +60,21 @@ function StatCards({ sales, ledgers, claimWarranties, purchases, dateRange }) {
       <StatCard
         title="Period Expenses"
         value={`Rs ${statsData.periodExpenses.toLocaleString()}`}
-        description={`${expensePercentage}% of total expenses`}
         color="bg-orange-100"
       />
       <StatCard
         title="Number of Debts"
         value={statsData.numberOfDebts.toString()}
-        description="Outstanding debts"
         color="bg-red-100"
       />
       <StatCard
         title="Current Warranty Claims"
         value={statsData.currentWarrantyClaims}
-        description="Active warranty claims"
         color="bg-yellow-100"
       />
       <StatCard
         title="Total Expenses"
         value={`Rs ${statsData.totalExpenses.toLocaleString()}`}
-        description="Total expenses to date"
         color="bg-blue-100"
       />
     </div>

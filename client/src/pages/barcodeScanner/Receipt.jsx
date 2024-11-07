@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { fetchSaleById } from "@/lib/api";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { useToast } from "@/hooks/use-toast";
 
 const SHOP_NAME_URDU = "یسین بیٹری زون انٹرپرائزس سنٹر";
 const SHOP_NAME_ENG = "YASEEN BATTERY ZONE";
@@ -13,11 +15,14 @@ const SHOP_INFO = "نئین چوک ڈیری شلوچستان";
 const MOBILE_NUMBERS = ["0300-9387788", "0321-8000881", "0812-866046"];
 
 export default function Receipt() {
+  const { toast } = useToast();
+
   const { id } = useParams();
   const {
     data: sale,
     isLoading,
     isError,
+    error,
   } = useQuery({
     queryKey: ["sale", id],
     queryFn: () => fetchSaleById(id),
@@ -61,8 +66,16 @@ export default function Receipt() {
     });
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading receipt</div>;
+  // Loading and Error States
+  if (isLoading) return <LoadingSpinner />;
+
+  if (isError) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: `Failed to load recipt: ${error.message}`,
+    });
+  }
 
   return (
     <Card className="max-w-3xl mx-auto mt-8 bg-white shadow-lg">

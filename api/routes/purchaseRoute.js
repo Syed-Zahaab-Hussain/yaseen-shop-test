@@ -57,6 +57,7 @@ router.get("/get/all", async (req, res) => {
       include: {
         supplier: true,
         purchaseItems: {
+          where: { isActive: true },
           include: {
             product: true,
             warranty: true,

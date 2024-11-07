@@ -14,7 +14,7 @@ router.get("/get/all", async (req, res) => {
   try {
     const suppliers = await prisma.entity.findMany({
       where: { isActive: true, type: "SUPPLIER" },
-      include: { purchases: true },
+      include: { purchases: {where: {isActive: true}} },
     });
 
     res.json(suppliers ? suppliers : []);

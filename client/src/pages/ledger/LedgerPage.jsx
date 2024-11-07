@@ -30,7 +30,7 @@ const LedgerPage = () => {
     queryFn: fetchLedgerEntries,
     retry: 2,
     refetchOnWindowFocus: false,
-    staleTime: 5 * 60 * 1000,
+    // staleTime: 5 * 60 * 1000,
   });
 
   const processedData = useMemo(() => {

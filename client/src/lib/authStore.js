@@ -5,12 +5,10 @@ const useAuthStore = create(
   persist(
     (set) => ({
       user: null,
-      token: null,
       isDrawerOpen: false,
       setUser: (user) => set({ user }),
-      setToken: (token) => set({ token }),
       setIsDrawerOpen: (isDrawerOpen) => set({ isDrawerOpen }),
-      logout: () => set({ user: null, token: null, isDrawerOpen:false }),
+      logout: () => set({ user: null, isDrawerOpen: false }),
     }),
     {
       name: "auth-storage",

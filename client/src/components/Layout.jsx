@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -31,6 +31,7 @@ import EditUserDialog from "./EditUserDialog";
 
 const Layout = () => {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { clearState, user, isDrawerOpen, setIsDrawerOpen } = useAuth();
   // Add state for dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -95,6 +96,7 @@ const Layout = () => {
     onSuccess: () => {
       setIsDrawerOpen(false);
       clearState();
+      navigate("/login"); // Add this line
     },
     onError: (error) => {
       console.error("Logout error:", error);
