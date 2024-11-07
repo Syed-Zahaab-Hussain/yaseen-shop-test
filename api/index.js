@@ -37,55 +37,55 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: process.env.VITE_BASE_URL,
     credentials: true,
   })
 );
 
 // -------------------Run this Function after reseting the database---------------------
 
-async function initializeDatabase() {
-  const initCheck = await prisma.user.findFirst({
-    where: { id: 1001 },
-  });
+// async function initializeDatabase() {
+//   const initCheck = await prisma.user.findFirst({
+//     where: { id: 1001 },
+//   });
 
-  if (!initCheck) {
-    await prisma.$executeRaw`ALTER SEQUENCE "User_id_seq" RESTART WITH 1001;`;
-    await prisma.$executeRaw`ALTER SEQUENCE "Product_id_seq" RESTART WITH 1001;`;
-    await prisma.$executeRaw`ALTER SEQUENCE "Category_id_seq" RESTART WITH 1001;`;
-    await prisma.$executeRaw`ALTER SEQUENCE "Entity_id_seq" RESTART WITH 1001;`;
-    await prisma.$executeRaw`ALTER SEQUENCE "Sale_id_seq" RESTART WITH 1001;`;
-    await prisma.$executeRaw`ALTER SEQUENCE "SaleItem_id_seq" RESTART WITH 1001;`;
-    await prisma.$executeRaw`ALTER SEQUENCE "Purchase_id_seq" RESTART WITH 1001;`;
-    await prisma.$executeRaw`ALTER SEQUENCE "PurchaseItem_id_seq" RESTART WITH 1001;`;
-    await prisma.$executeRaw`ALTER SEQUENCE "Warranty_id_seq" RESTART WITH 1001;`;
-    await prisma.$executeRaw`ALTER SEQUENCE "Claim_id_seq" RESTART WITH 1001;`;
-    await prisma.$executeRaw`ALTER SEQUENCE "LedgerEntry_id_seq" RESTART WITH 1001;`;
-    console.log("Database initialized with custom sequence start value.");
+//   if (!initCheck) {
+//     await prisma.$executeRaw`ALTER SEQUENCE "User_id_seq" RESTART WITH 1001;`;
+//     await prisma.$executeRaw`ALTER SEQUENCE "Product_id_seq" RESTART WITH 1001;`;
+//     await prisma.$executeRaw`ALTER SEQUENCE "Category_id_seq" RESTART WITH 1001;`;
+//     await prisma.$executeRaw`ALTER SEQUENCE "Entity_id_seq" RESTART WITH 1001;`;
+//     await prisma.$executeRaw`ALTER SEQUENCE "Sale_id_seq" RESTART WITH 1001;`;
+//     await prisma.$executeRaw`ALTER SEQUENCE "SaleItem_id_seq" RESTART WITH 1001;`;
+//     await prisma.$executeRaw`ALTER SEQUENCE "Purchase_id_seq" RESTART WITH 1001;`;
+//     await prisma.$executeRaw`ALTER SEQUENCE "PurchaseItem_id_seq" RESTART WITH 1001;`;
+//     await prisma.$executeRaw`ALTER SEQUENCE "Warranty_id_seq" RESTART WITH 1001;`;
+//     await prisma.$executeRaw`ALTER SEQUENCE "Claim_id_seq" RESTART WITH 1001;`;
+//     await prisma.$executeRaw`ALTER SEQUENCE "LedgerEntry_id_seq" RESTART WITH 1001;`;
+//     console.log("Database initialized with custom sequence start value.");
 
-    // const seedCategoriesResult = await seedCategories();
-    // if (seedCategoriesResult) console.log("Categories seeded successfully.");
+//     const seedCategoriesResult = await seedCategories();
+//     if (seedCategoriesResult) console.log("Categories seeded successfully.");
 
-    // const seedSuppliersResult = await seedSuppliers();
-    // if (seedSuppliersResult) console.log("Suppliers seeded successfully.");
+//     const seedSuppliersResult = await seedSuppliers();
+//     if (seedSuppliersResult) console.log("Suppliers seeded successfully.");
 
-    // const seedProductsResult = await seedProducts();
-    // if (seedProductsResult) console.log("Products seeded successfully.");
-  } else {
-    console.log("Database already initialized.");
-  }
-}
+//     const seedProductsResult = await seedProducts();
+//     if (seedProductsResult) console.log("Products seeded successfully.");
+//   } else {
+//     console.log("Database already initialized.");
+//   }
+// }
 
-initializeDatabase()
-  .catch((e) => console.error(e))
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// initializeDatabase()
+//   .catch((e) => console.error(e))
+//   .finally(async () => {
+//     await prisma.$disconnect();
+//   });
 
 // ----------------------------------------------------------------
 
-const __dirname = path.resolve();
-app.use(express.static(path.join(__dirname, "/client/dist")));
+// const __dirname = path.resolve();
+// app.use(express.static(path.join(__dirname, "/client/dist")));
 
 app.use("/auth", authRoute);
 app.use("/category", verifyJWT, categoryRoute);
@@ -97,9 +97,9 @@ app.use("/customer", verifyJWT, customerRoute);
 app.use("/sale", verifyJWT, salesRoute);
 app.use("/ledger", verifyJWT, ledgerRoute);
 
-app.get("*", function (req, res) {
-  res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
-});
+// app.get("*", function (req, res) {
+//   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
+// });
 
 // ----------------------------------------------------------------
 
