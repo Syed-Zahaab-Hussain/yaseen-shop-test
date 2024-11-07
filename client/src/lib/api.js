@@ -27,7 +27,7 @@ axiosInstance.interceptors.response.use(
 // ==========================================================================
 export const checkAuth = async () => {
   try {
-    const response = await axiosInstance.get("/auth/check");
+    const response = await publicInstance.get("/auth/check");
 
     return response.data.isAuthenticated;
   } catch (error) {
@@ -36,13 +36,13 @@ export const checkAuth = async () => {
 };
 
 export const register = async () => {
-  const response = await axiosInstance.post("/auth/register");
+  const response = await publicInstance.post("/auth/register");
   return response.data;
 };
 export const login = async (data) => {
   console.log(data);
 
-  const response = await axiosInstance.post("/auth/login", data);
+  const response = await publicInstance.post("/auth/login", data);
   return response.data;
 };
 
