@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Router } from "express";
 import cookieParser from "cookie-parser";
 // import path from "path";
 import cors from "cors";
@@ -90,6 +90,9 @@ app.use(
 
 // const __dirname = path.resolve();
 // app.use(express.static(path.join(__dirname, "/client/dist")));
+const router = Router();
+router.get("/hello", (req, res) => res.send("Hello World!"));
+api.use("/api/", router);
 
 app.use("/api/auth", authRoute);
 app.use("/api/category", verifyJWT, categoryRoute);
