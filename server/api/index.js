@@ -1,10 +1,8 @@
-import express, { Router } from "express";
+import express from "express";
 import cookieParser from "cookie-parser";
-// import path from "path";
 import cors from "cors";
 import { PrismaClient } from "@prisma/client";
 import "dotenv/config";
-import serverless from "serverless-http";
 
 // ----------------------------------------------------------------
 
@@ -25,15 +23,8 @@ import ledgerRoute from "./routes/ledgerRoute.js";
 // ----------------------------------------------------------------
 
 const allowedDomains = process.env.BASE_URL.split(",");
-// console.log("allowedDomains", allowedDomains);
 
-const prisma = new PrismaClient({
-  transactionOptions: {
-    isolationLevel: "ReadCommitted",
-    timeout: 1_0000, // 10 sec
-    maxWait: 2_0000, // 20 sec
-  },
-});
+const prisma = new PrismaClient();
 const app = express();
 
 app.use(express.json());
@@ -88,12 +79,6 @@ app.use(
 
 // ----------------------------------------------------------------
 
-// const __dirname = path.resolve();
-// app.use(express.static(path.join(__dirname, "/client/dist")));
-const router = Router();
-router.get("/hello", (req, res) => res.send("Hello World!"));
-api.use("/api/", router);
-
 app.use("/api/auth", authRoute);
 app.use("/api/category", verifyJWT, categoryRoute);
 app.use("/api/product", verifyJWT, productRoute);
@@ -103,11 +88,6 @@ app.use("/api/warranty", verifyJWT, warrantyRoute);
 app.use("/api/customer", verifyJWT, customerRoute);
 app.use("/api/sale", verifyJWT, salesRoute);
 app.use("/api/ledger", verifyJWT, ledgerRoute);
-
-// app.get("*", function (req, res) {
-//   res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
-// });
-export const handler = serverless(app);
 
 // ----------------------------------------------------------------
 
