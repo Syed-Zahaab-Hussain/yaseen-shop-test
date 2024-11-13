@@ -115,7 +115,7 @@ export default function Receipt() {
           </div>
           <div className="flex flex-col">
             <div className="flex">
-              <span className="w-20">No:</span>
+              <span className="w-20">Number</span>
               <span className="flex-1 border-b border-gray-300">
                 {sale.customer?.contact || ""}
               </span>

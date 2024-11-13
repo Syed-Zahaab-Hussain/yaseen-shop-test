@@ -16,9 +16,9 @@ import customerRoute from "./routes/customerRoute.js";
 import salesRoute from "./routes/salesRoute.js";
 import ledgerRoute from "./routes/ledgerRoute.js";
 // Seeds
-// import seedCategories from "./seed/seedCategories.js";
-// import seedSuppliers from "./seed/seedSuppliers.js";
-// import seedProducts from "./seed/seedProducts&User.js";
+import seedCategories from "./seed/seedCategories.js";
+import seedSuppliers from "./seed/seedSuppliers.js";
+import seedProducts from "./seed/seedProducts&User.js";
 
 // ----------------------------------------------------------------
 
@@ -39,43 +39,43 @@ app.use(
 
 // -------------------Run this Function after reseting the database---------------------
 
-// async function initializeDatabase() {
-//   const initCheck = await prisma.user.findFirst({
-//     where: { id: 1001 },
-//   });
+async function initializeDatabase() {
+  const initCheck = await prisma.user.findFirst({
+    where: { id: 1001 },
+  });
 
-//   if (!initCheck) {
-//     await prisma.$executeRaw`ALTER SEQUENCE "User_id_seq" RESTART WITH 1001;`;
-//     await prisma.$executeRaw`ALTER SEQUENCE "Product_id_seq" RESTART WITH 1001;`;
-//     await prisma.$executeRaw`ALTER SEQUENCE "Category_id_seq" RESTART WITH 1001;`;
-//     await prisma.$executeRaw`ALTER SEQUENCE "Entity_id_seq" RESTART WITH 1001;`;
-//     await prisma.$executeRaw`ALTER SEQUENCE "Sale_id_seq" RESTART WITH 1001;`;
-//     await prisma.$executeRaw`ALTER SEQUENCE "SaleItem_id_seq" RESTART WITH 1001;`;
-//     await prisma.$executeRaw`ALTER SEQUENCE "Purchase_id_seq" RESTART WITH 1001;`;
-//     await prisma.$executeRaw`ALTER SEQUENCE "PurchaseItem_id_seq" RESTART WITH 1001;`;
-//     await prisma.$executeRaw`ALTER SEQUENCE "Warranty_id_seq" RESTART WITH 1001;`;
-//     await prisma.$executeRaw`ALTER SEQUENCE "Claim_id_seq" RESTART WITH 1001;`;
-//     await prisma.$executeRaw`ALTER SEQUENCE "LedgerEntry_id_seq" RESTART WITH 1001;`;
-//     console.log("Database initialized with custom sequence start value.");
+  if (!initCheck) {
+    await prisma.$executeRaw`ALTER SEQUENCE "User_id_seq" RESTART WITH 1001;`;
+    await prisma.$executeRaw`ALTER SEQUENCE "Product_id_seq" RESTART WITH 1001;`;
+    await prisma.$executeRaw`ALTER SEQUENCE "Category_id_seq" RESTART WITH 1001;`;
+    await prisma.$executeRaw`ALTER SEQUENCE "Entity_id_seq" RESTART WITH 1001;`;
+    await prisma.$executeRaw`ALTER SEQUENCE "Sale_id_seq" RESTART WITH 1001;`;
+    await prisma.$executeRaw`ALTER SEQUENCE "SaleItem_id_seq" RESTART WITH 1001;`;
+    await prisma.$executeRaw`ALTER SEQUENCE "Purchase_id_seq" RESTART WITH 1001;`;
+    await prisma.$executeRaw`ALTER SEQUENCE "PurchaseItem_id_seq" RESTART WITH 1001;`;
+    await prisma.$executeRaw`ALTER SEQUENCE "Warranty_id_seq" RESTART WITH 1001;`;
+    await prisma.$executeRaw`ALTER SEQUENCE "Claim_id_seq" RESTART WITH 1001;`;
+    await prisma.$executeRaw`ALTER SEQUENCE "LedgerEntry_id_seq" RESTART WITH 1001;`;
+    console.log("Database initialized with custom sequence start value.");
 
-//     const seedCategoriesResult = await seedCategories();
-//     if (seedCategoriesResult) console.log("Categories seeded successfully.");
+    const seedCategoriesResult = await seedCategories();
+    if (seedCategoriesResult) console.log("Categories seeded successfully.");
 
-//     const seedSuppliersResult = await seedSuppliers();
-//     if (seedSuppliersResult) console.log("Suppliers seeded successfully.");
+    const seedSuppliersResult = await seedSuppliers();
+    if (seedSuppliersResult) console.log("Suppliers seeded successfully.");
 
-//     const seedProductsResult = await seedProducts();
-//     if (seedProductsResult) console.log("Products seeded successfully.");
-//   } else {
-//     console.log("Database already initialized.");
-//   }
-// }
+    const seedProductsResult = await seedProducts();
+    if (seedProductsResult) console.log("Products seeded successfully.");
+  } else {
+    console.log("Database already initialized.");
+  }
+}
 
-// initializeDatabase()
-//   .catch((e) => console.error(e))
-//   .finally(async () => {
-//     await prisma.$disconnect();
-//   });
+initializeDatabase()
+  .catch((e) => console.error(e))
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
 
 // ----------------------------------------------------------------
 

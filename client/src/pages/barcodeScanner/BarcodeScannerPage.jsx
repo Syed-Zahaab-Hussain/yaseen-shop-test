@@ -4,13 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { addSale } from "@/lib/api";
-import BarcodeScanner from "./BarcodeScanner";
 import ProductList from "./ProductList";
 import CustomerForm from "./CustomerForm";
-import PaymentForm from "./PaymentForm";
+import PaymentSection from "./PaymentSection";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import ProductSearchSystem from "./ProductSearchSystem";
 
 export default function BarcodeScannerPage() {
   const navigate = useNavigate();
@@ -98,14 +98,6 @@ export default function BarcodeScannerPage() {
     if (!receivedAmount || parseFloat(receivedAmount) <= 0) {
       newErrors.receivedAmount = "Please enter received amount";
     }
-
-    // if (paymentMethod === "cash" && !receivedAmount) {
-    //   newErrors.receivedAmount = "Please enter received amount";
-    // }
-
-    // if (customerInfo.type === "SHOPOWNER" && !customerInfo.name) {
-    //   newErrors.customerName = "Shop owner name is required";
-    // }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -218,11 +210,7 @@ export default function BarcodeScannerPage() {
                 Only ${availableQuantity} units available
               </AlertDescription>
             </Alert>;
-            // toast({
-            //   title: "Invalid quantity",
-            //   description: `Only ${availableQuantity} units available`,
-            //   variant: "warning",
-            // });
+
             return { ...product, quantity: availableQuantity };
           }
 
@@ -258,97 +246,149 @@ export default function BarcodeScannerPage() {
     }
   }, [receivedAmount, finalAmount]);
 
+  // return (
+  //   <div className="max-w-7xl mx-auto space-y-6">
+  //     {Object.keys(errors).length > 0 && (
+  //       <Alert variant="destructive">
+  //         <AlertDescription>
+  //           <ul className="list-disc pl-4">
+  //             {Object.values(errors).map((error, index) => (
+  //               <li key={index}>{error}</li>
+  //             ))}
+  //           </ul>
+  //         </AlertDescription>
+  //       </Alert>
+  //     )}
+
+  //     <Card>
+  //       <CardHeader>
+  //         <CardTitle>Scanned Products</CardTitle>
+  //       </CardHeader>
+  //       <CardContent>
+  //         <ProductSearchSystem
+  //           onProductScanned={handleProductScanned}
+  //           disabled={isLoading}
+  //         />
+  //         <ProductList
+  //           products={scannedProducts}
+  //           onQuantityChange={handleQuantityChange}
+  //           onRemoveProduct={handleRemoveProduct}
+  //           disabled={isLoading}
+  //         />
+  //       </CardContent>
+  //     </Card>
+
+  //     <CustomerForm
+  //       customerInfo={customerInfo}
+  //       onCustomerInfoChange={setCustomerInfo}
+  //       errors={errors}
+  //       disabled={isLoading}
+  //     />
+
+  //     <PaymentSection
+  //       paymentMethod={paymentMethod}
+  //       onPaymentMethodChange={setPaymentMethod}
+  //       discount={discount}
+  //       onDiscountChange={setDiscount}
+  //       receivedAmount={receivedAmount}
+  //       onReceivedAmountChange={setReceivedAmount}
+  //       change={change}
+  //       debt={debt}
+  //       totalAmount={totalAmount}
+  //       discountAmount={discountAmount}
+  //       finalAmount={finalAmount}
+  //       disabled={isLoading}
+  //     />
+
+  //     <Button
+  //       className="w-full"
+  //       size="lg"
+  //       onClick={handleCompleteTransaction}
+  //       disabled={isLoading}
+  //     >
+  //       {isLoading ? (
+  //         <>
+  //           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+  //           Processing...
+  //         </>
+  //       ) : (
+  //         "Complete Transaction"
+  //       )}
+  //     </Button>
+  //   </div>
+  // );
+
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Point of Sale System
-          </h1>
-          <Button variant="outline" onClick={resetForm} disabled={isLoading}>
-            Clear Form
-          </Button>
-        </div>
+    <div className="max-w-7xl mx-auto space-y-6 p-6">
+      {Object.keys(errors).length > 0 && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            <ul className="list-disc pl-4">
+              {Object.values(errors).map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
 
-        {Object.keys(errors).length > 0 && (
-          <Alert variant="destructive">
-            <AlertDescription>
-              <ul className="list-disc pl-4">
-                {Object.values(errors).map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Scanned Products</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <BarcodeScanner
-                onProductScanned={handleProductScanned}
-                disabled={isLoading}
-              />
-              <ProductList
-                products={scannedProducts}
-                onQuantityChange={handleQuantityChange}
-                onRemoveProduct={handleRemoveProduct}
-                disabled={isLoading}
-              />
-              <div className="mt-4 space-y-2">
-                <div className="text-right text-lg">
-                  Subtotal: Rs {totalAmount.toLocaleString()}
-                </div>
-                <div className="text-right text-lg">
-                  Discount: Rs {discountAmount.toLocaleString()}
-                </div>
-                <div className="text-right text-2xl font-bold">
-                  Total: Rs {finalAmount.toLocaleString()}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-6">
-            <CustomerForm
-              customerInfo={customerInfo}
-              onCustomerInfoChange={setCustomerInfo}
-              errors={errors}
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Scanned Products</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ProductSearchSystem
+              onProductScanned={handleProductScanned}
               disabled={isLoading}
             />
-            <PaymentForm
-              paymentMethod={paymentMethod}
-              onPaymentMethodChange={setPaymentMethod}
-              discount={discount}
-              onDiscountChange={setDiscount}
-              receivedAmount={receivedAmount}
-              onReceivedAmountChange={setReceivedAmount}
-              change={change}
-              debt={debt}
-              errors={errors}
+            <ProductList
+              products={scannedProducts}
+              onQuantityChange={handleQuantityChange}
+              onRemoveProduct={handleRemoveProduct}
               disabled={isLoading}
             />
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={handleCompleteTransaction}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                "Complete Transaction"
-              )}
-            </Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
+
+        <CustomerForm
+          customerInfo={customerInfo}
+          onCustomerInfoChange={setCustomerInfo}
+          errors={errors}
+          disabled={isLoading}
+        />
       </div>
+
+      <PaymentSection
+        paymentMethod={paymentMethod}
+        onPaymentMethodChange={setPaymentMethod}
+        discount={discount}
+        onDiscountChange={setDiscount}
+        receivedAmount={receivedAmount}
+        onReceivedAmountChange={setReceivedAmount}
+        change={change}
+        debt={debt}
+        totalAmount={totalAmount}
+        discountAmount={discountAmount}
+        finalAmount={finalAmount}
+        disabled={isLoading}
+      />
+
+      <Button
+        className="w-full"
+        size="lg"
+        onClick={handleCompleteTransaction}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          "Complete Transaction"
+        )}
+      </Button>
     </div>
   );
 }

@@ -8,15 +8,16 @@ import { getColumns } from "./LedgerColumns";
 import StatCard from "@/components/StatCard";
 
 import { Button } from "@/components/ui/button";
-import { ReloadIcon } from "@radix-ui/react-icons";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart } from "@/components/charts/Charts";
 import ErrorState from "@/components/ErrorState";
+import AddLedgerDialog from "./AddLedgerDialog";
 
 const LedgerPage = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -173,27 +174,17 @@ const LedgerPage = () => {
           </div>
 
           {/* Table Section */}
+          {/* Table Section */}
           <div className="p-6 bg-white rounded-md shadow-md">
-            <div className="flex justify-between items-center px-2 mb-4">
+            <div className="flex justify-between items-center px-2 mb-4 gap-4">
               <Input
                 placeholder="Search all columns..."
                 value={globalFilter}
                 onChange={(e) => setGlobalFilter(e.target.value)}
                 className="max-w-sm"
               />
-              <Button
-                variant="outline"
-                onClick={() => refetch()}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                    Refreshing...
-                  </>
-                ) : (
-                  "Refresh Data"
-                )}
+              <Button onClick={() => setIsDialogOpen(true)}>
+                Add Ledger Entry
               </Button>
             </div>
             <DataTable
@@ -210,6 +201,12 @@ const LedgerPage = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Add the AddLedgerDialog component */}
+      <AddLedgerDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+      />
     </div>
   );
 };

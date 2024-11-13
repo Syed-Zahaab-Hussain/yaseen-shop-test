@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import SaleInformation from "./SaleInformation";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle, Receipt } from "lucide-react";
 import { DataTable } from "@/components/DataTable";
 import { getColumns } from "./SaleDetailColumns";
 import EditSaleItemDialog from "./EditSaleItemDialog";
@@ -145,10 +145,27 @@ const SaleDetailPage = () => {
 
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Sold Items</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Sold Items</CardTitle>
+            <Button
+              onClick={() => navigate(`/receipt/${sale.id}`)}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Receipt className="h-4 w-4" />
+              Generate Receipt
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} data={sale.saleItems || []} />
+          <DataTable
+            columns={getColumns({
+              onEdit: setEditingItem,
+              onDelete: deleteItemMutation.mutate,
+              onWarrantyClaim: setWarrantyClaimItem,
+            })}
+            data={sale.saleItems || []}
+          />
         </CardContent>
       </Card>
 

@@ -93,126 +93,150 @@ router.get("/barcode/get/:barcode", async (req, res) => {
   }
 });
 
-// router.post("/add", async (req, res) => {
-//   console.log(req.body);
-
-//   const {
-//     saleItems,
-//     customerInfo,
-//     paymentMethod,
-//     totalAmount,
-//     receivedAmount,
-//     discount,
-//     debt,
-//     date,
-//   } = req.body;
-
-//   const createdAt = date ? new Date(date) : new Date();
-
+// Search products by name
+// router.get("/products/search", async (req, res) => {
 //   try {
-//     const result = await prisma.$transaction(async (prisma) => {
-//       // Create or update customer
-//       let customer;
-//       if (customerInfo.id) {
-//         customer = await prisma.entity.update({
-//           where: { id: customerInfo.id },
-//           data: {
-//             name: customerInfo.name,
-//             customerType: customerInfo.type,
-//             email: customerInfo.email,
-//             contact: customerInfo.contact,
-//             address: customerInfo.address,
-//             updatedAt: createdAt,
-//           },
-//         });
-//       } else {
-//         customer = await prisma.entity.create({
-//           data: {
-//             name: customerInfo.name,
-//             customerType: customerInfo.type,
-//             email: customerInfo.email,
-//             contact: customerInfo.contact,
-//             address: customerInfo.address,
-//             type: "CUSTOMER",
-//             createdAt,
-//             updatedAt: createdAt,
-//           },
-//         });
-//       }
+//     const { name } = req.query;
 
-//       // Create sale
-//       const sale = await prisma.sale.create({
-//         data: {
-//           entityId: customer.id,
-//           totalAmount,
-//           paymentMethod,
-//           receivedAmount,
-//           discount,
-//           debtRepaymentDate: debt > 0 ? addDays(createdAt, 30) : null,
-//           createdAt,
-//           updatedAt: createdAt,
-//           saleItems: {
-//             create: saleItems.map((item) => ({
-//               productId: item.productId,
-//               quantity: item.quantity,
-//               salePrice: item.salePrice,
-//               totalPrice: item.totalPrice,
-//               purchaseItemId: item.purchaseItemId,
-//               createdAt,
-//               updatedAt: createdAt,
-//             })),
-//           },
-//         },
-//         include: {
-//           saleItems: true,
-//           customer: true,
-//         },
+//     // console.log(name);
+//     if (!name || name.length < 2) {
+//       return res.status(400).json({
+//         error: "Search term must be at least 2 characters long",
 //       });
+//     }
 
-//       // Update product quantities and handle warranties
-//       for (const item of saleItems) {
-//         await prisma.purchaseItem.update({
-//           where: { id: item.purchaseItemId },
-//           data: {
-//             soldQuantity: {
-//               increment: item.quantity,
+//     const products = await prisma.product.findMany({
+//       where: {
+//         AND: [
+//           {
+//             name: {
+//               contains: name,
+//               mode: "insensitive", // Case-insensitive search
 //             },
-//             updatedAt: createdAt,
 //           },
-//         });
-
-//         const saleItem = sale.saleItems.find(
-//           (si) => si.purchaseItemId === item.purchaseItemId
-//         );
-
-//         const warranty = await prisma.warranty.findUnique({
-//           where: { purchaseItemId: item.purchaseItemId },
-//         });
-
-//         if (warranty) {
-//           await prisma.warranty.create({
-//             data: {
-//               saleItemId: saleItem.id,
-//               retailerWarrantyDuration: warranty.retailerWarrantyDuration,
-//               customerWarrantyDuration: warranty.customerWarrantyDuration,
-//               createdAt,
-//               updatedAt: createdAt,
-//             },
-//           });
-//         }
-//       }
-
-//       return sale;
+//           { isActive: true },
+//           { deletedAt: null },
+//         ],
+//       },
+//       include: {
+//         category: {
+//           select: {
+//             name: true,
+//           },
+//         },
+//       },
+//       take: 10, // Limit results to prevent performance issues
 //     });
-
-//     res.status(201).json(result);
+//     // console.log(products)
+//     res.json(products);
 //   } catch (error) {
-//     console.error("Error creating sale:", error);
-//     res
-//       .status(500)
-//       .json({ error: "An error occurred while creating the sale." });
+//     console.error("Product search error:", error);
+//     res.status(500).json({
+//       error: "Error searching products",
+//     });
 //   }
 // });
+
+router.get("/products/search", async (req, res) => {
+  try {
+    const { name } = req.query;
+
+    if (!name || name.length < 2) {
+      return res.status(400).json({
+        error: "Search term must be at least 2 characters long",
+      });
+    }
+
+    const products = await prisma.product.findMany({
+      where: {
+        AND: [
+          {
+            name: {
+              contains: name,
+              mode: "insensitive",
+            },
+          },
+          { isActive: true },
+          { deletedAt: null },
+        ],
+      },
+      include: {
+        category: {
+          select: {
+            name: true,
+          },
+        },
+        purchaseItems: {
+          select: {
+            initialQuantity: true,
+            soldQuantity: true,
+          },
+        },
+      },
+      take: 10,
+    });
+
+    const productsWithQuantity = products.map((product) => {
+      const totalQuantity = product.purchaseItems.reduce(
+        (acc, item) => acc + (item.initialQuantity - item.soldQuantity),
+        0
+      );
+      return {
+        ...product,
+        totalQuantityAvailable: totalQuantity,
+      };
+    });
+console.log(productsWithQuantity);
+
+    res.json(productsWithQuantity);
+  } catch (error) {
+    console.error("Product search error:", error);
+    res.status(500).json({
+      error: "Error searching products",
+    });
+  }
+});
+
+
+// Get purchase items by product ID
+router.get("/purchase-items/product/:productId", async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const purchaseItems = await prisma.purchaseItem.findMany({
+      where: {
+        productId: parseInt(productId),
+        isActive: true,
+      },
+      include: {
+        purchase: {
+          select: {
+            createdAt: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc", // Latest purchases first
+      },
+    });
+    console.log("purchaseItems:", purchaseItems);
+
+    // Filter items to include only those with available stock
+    const availablePurchaseItems = purchaseItems
+      .filter((item) => item.initialQuantity > item.soldQuantity)
+      .map((item) => ({
+        ...item,
+        availableQuantity: item.initialQuantity - item.soldQuantity,
+      }));
+
+    res.json(availablePurchaseItems);
+  } catch (error) {
+    console.error("Purchase items fetch error:", error);
+    res.status(500).json({
+      error: "Error fetching purchase items",
+    });
+  }
+});
 
 router.post("/add", async (req, res) => {
   const {

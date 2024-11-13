@@ -1,4 +1,3 @@
-// File: components/ProductList.tsx
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -17,7 +16,7 @@ export default function ProductList({
   onRemoveProduct,
 }) {
   return (
-    <ScrollArea className="h-[400px]">
+    <ScrollArea className="max-h-[400px]">
       <Table>
         <TableHeader>
           <TableRow>

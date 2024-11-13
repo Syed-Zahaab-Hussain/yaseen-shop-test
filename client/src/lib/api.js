@@ -212,6 +212,25 @@ export const fetchProductByBarcode = async (id) => {
   return response.data;
 };
 
+export const fetchProductsByName = async (searchTerm) => {
+  // console.log(searchTerm);
+  const response = await axiosInstance.get(
+    `/sale/products/search?name=${searchTerm}`
+  );
+  console.log(response);
+
+  return response.data;
+};
+
+export const fetchPurchaseItemsByProductId = async (productId) => {
+  // console.log(productId);
+
+  const response = await axiosInstance.get(
+    `/sale/purchase-items/product/${productId}`
+  );
+  return response.data;
+};
+
 // ==========================================================================
 export const addCustomer = async (data) => {
   const response = await axiosInstance.post(`/customer/add`, data);
@@ -355,6 +374,12 @@ export const fetchLedgerEntries = async ({ queryKey }) => {
 
 export const fetchEntityById = async (id) => {
   const response = await axiosInstance.get(`/ledger/get/${id}`);
+  return response.data;
+};
+
+export const addLedgerEntry = async (data) => {
+  const response = await axiosInstance.post(`/ledger/add`, data);
+  // console.log(ClaimWarranties.parse(response.data));
   return response.data;
 };
 

@@ -1,13 +1,8 @@
 import { Pencil, Trash } from "lucide-react";
 import DynamicDropdownMenu from "@/components/DynamicDropdownMenu";
-import { addYears, format } from "date-fns";
+import { addMonths, format } from "date-fns";
 
-export const getColumns = ({
-  openReceipt,
-  onEdit,
-  onDelete,
-  onWarrantyClaim,
-}) => [
+export const getColumns = ({ onEdit, onDelete, onWarrantyClaim }) => [
   {
     accessorKey: "id",
     header: "ID",
@@ -42,10 +37,10 @@ export const getColumns = ({
   },
   {
     accessorKey: "warranty.customerWarrantyDuration",
-    header: "Warranty duration (Years)",
+    header: "Warranty duration (Months)",
     cell: ({ row }) => {
       const customerEndDate = row.original.warranty.customerWarrantyDuration;
-      return `${customerEndDate} year` || "-";
+      return `${customerEndDate} months` || "-";
     },
   },
   {
@@ -56,7 +51,7 @@ export const getColumns = ({
       const warrantyDuration = row.original.warranty.customerWarrantyDuration;
       const warrantyStartDate = row.original.warranty.createdAt.split("T")[0];
       const warrantyEndDate = format(
-        addYears(warrantyStartDate, warrantyDuration),
+        addMonths(warrantyStartDate, warrantyDuration),
         "dd MMMM yyyy"
       );
       return warrantyEndDate ? warrantyEndDate : "-";
@@ -76,11 +71,6 @@ export const getColumns = ({
       const saleItem = row.original;
       console.log(saleItem);
       const menuItems = [
-        {
-          label: "Receipt",
-          icon: Pencil,
-          onClick: () => openReceipt(saleItem),
-        },
         {
           label: "Edit",
           icon: Pencil,

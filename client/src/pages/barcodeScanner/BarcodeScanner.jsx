@@ -1,3 +1,164 @@
+// import { useEffect, useRef, useState } from "react";
+// import { useQuery } from "@tanstack/react-query";
+// import { useZxing } from "react-zxing";
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
+// import { fetchProductByBarcode } from "@/lib/api";
+// import { Loader2, Camera, CameraOff } from "lucide-react";
+// import { Alert, AlertDescription } from "@/components/ui/alert";
+
+// export default function BarcodeScanner({
+//   onProductScanned,
+//   disabled,
+//   isActive,
+// }) {
+//   const [barcodeInput, setBarcodeInput] = useState("");
+//   const [isScannerEnabled, setIsScannerEnabled] = useState(true);
+//   const barcodeInputRef = useRef(null);
+
+//   const { ref, stop, start } = useZxing({
+//     onDecodeResult(result) {
+//       const barcode = result.getText();
+//       console.log("Scanned barcode:", barcode);
+//       setBarcodeInput(barcode);
+//       // Automatically submit the form when barcode is scanned
+//       handleBarcodeScanned(barcode);
+//     },
+//     paused: !isScannerEnabled || !isActive || disabled,
+//   });
+
+//   const {
+//     data: scannedProduct,
+//     refetch: refetchProduct,
+//     isLoading,
+//     error,
+//     isError,
+//   } = useQuery({
+//     queryKey: ["product", barcodeInput],
+//     queryFn: () => fetchProductByBarcode(barcodeInput),
+//     enabled: false,
+//     retry: 1,
+//   });
+
+//   useEffect(() => {
+//     if (!isActive || disabled) {
+//       if (typeof stop === "function") {
+//         stop();
+//       }
+//       setIsScannerEnabled(false);
+//     } else {
+//       if (typeof start === "function") {
+//         start();
+//       }
+//       setIsScannerEnabled(true);
+//     }
+//   }, [isActive, disabled, stop, start]);
+
+//   useEffect(() => {
+//     if (scannedProduct) {
+//       onProductScanned(scannedProduct);
+//       setBarcodeInput("");
+//     }
+//   }, [scannedProduct, onProductScanned]);
+
+//   const handleBarcodeScanned = (barcode) => {
+//     if (!barcode.trim()) return;
+//     refetchProduct();
+//   };
+
+//   const handleBarcodeSubmit = (e) => {
+//     e.preventDefault();
+//     handleBarcodeScanned(barcodeInput);
+//   };
+
+//   const toggleScanner = () => {
+//     setIsScannerEnabled((prev) => {
+//       const newState = !prev;
+//       if (newState && typeof start === "function") {
+//         start();
+//       } else if (!newState && typeof stop === "function") {
+//         stop();
+//       }
+//       return newState;
+//     });
+//   };
+
+//   const shouldShowError = () => {
+//     return isError && barcodeInput && !isLoading && !scannedProduct;
+//   };
+
+//   return (
+//     <>
+//       <form onSubmit={handleBarcodeSubmit} className="mb-4">
+//         <div className="flex space-x-2">
+//           <Input
+//             ref={barcodeInputRef}
+//             type="number"
+//             placeholder="Enter barcode"
+//             value={barcodeInput}
+//             onChange={(e) => setBarcodeInput(e.target.value)}
+//             disabled={disabled || isLoading}
+//           />
+//           <Button
+//             type="submit"
+//             disabled={disabled || isLoading || !barcodeInput.trim()}
+//           >
+//             {isLoading ? (
+//               <>
+//                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+//                 Scanning...
+//               </>
+//             ) : (
+//               "Add"
+//             )}
+//           </Button>
+//         </div>
+//       </form>
+
+//       {shouldShowError() && (
+//         <Alert variant="destructive" className="mb-4">
+//           <AlertDescription>
+//             {error?.response?.data?.error ||
+//               "Error scanning product. Please try again."}
+//           </AlertDescription>
+//         </Alert>
+//       )}
+
+//       <div className="mb-4 relative">
+//         <Button
+//           variant="outline"
+//           size="sm"
+//           className="absolute top-2 right-2 z-10"
+//           onClick={toggleScanner}
+//           disabled={!isActive || disabled}
+//         >
+//           {isScannerEnabled ? (
+//             <>
+//               <CameraOff className="mr-2 h-4 w-4" />
+//               Disable Scanner
+//             </>
+//           ) : (
+//             <>
+//               <Camera className="mr-2 h-4 w-4" />
+//               Enable Scanner
+//             </>
+//           )}
+//         </Button>
+//         {isActive && (
+//           <video
+//             ref={ref}
+//             className="w-full h-48 object-cover"
+//             style={{
+//               opacity: disabled || !isScannerEnabled ? 0.5 : 1,
+//               display: isScannerEnabled ? "block" : "none",
+//             }}
+//           />
+//         )}
+//       </div>
+//     </>
+//   );
+// }
+
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useZxing } from "react-zxing";
@@ -7,17 +168,21 @@ import { fetchProductByBarcode } from "@/lib/api";
 import { Loader2, Camera, CameraOff } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export default function BarcodeScanner({ onProductScanned, disabled }) {
+export default function BarcodeScanner({
+  onProductScanned,
+  disabled,
+  isActive,
+}) {
   const [barcodeInput, setBarcodeInput] = useState("");
   const [searchBarcode, setSearchBarcode] = useState("");
   const [isScannerEnabled, setIsScannerEnabled] = useState(true);
   const barcodeInputRef = useRef(null);
 
-  const { ref, torch, stop, start } = useZxing({
+  const { ref, stop, start } = useZxing({
     onResult(result) {
       handleBarcodeScanned(result.getText());
     },
-    paused: !isScannerEnabled,
+    paused: !isScannerEnabled || !isActive || disabled,
   });
 
   const {

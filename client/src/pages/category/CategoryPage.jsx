@@ -14,6 +14,8 @@ import { getColumns } from "./CategoryColumns";
 import CategoryStats from "./CategoryStats";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { Button } from "@/components/ui/button";
+
 
 const CategoryPage = () => {
   const { toast } = useToast();
@@ -162,6 +164,49 @@ const CategoryPage = () => {
     );
   }
 
+  // return (
+  //   <div className="space-y-6 p-6">
+  //     <CategoryStats categories={categories} />
+
+  //     <div className="bg-white rounded-md shadow-md">
+  //       <div className="flex justify-between p-4">
+  //         <Input
+  //           placeholder="Search all columns..."
+  //           value={globalFilter}
+  //           onChange={handleGlobalFilter}
+  //           className="max-w-sm"
+  //           aria-label="Search categories"
+  //         />
+  //       </div>
+
+  //       <DataTable
+  //         columns={columns}
+  //         data={filteredData}
+  //         pagination
+  //         initialState={{
+  //           pagination: {
+  //             pageSize: 10,
+  //           },
+  //         }}
+  //       />
+  //     </div>
+
+  //     <AddCategoryDialog
+  //       isOpen={isAddDialogOpen}
+  //       onClose={() => setIsAddDialogOpen(false)}
+  //       onSave={handleAddCategory}
+  //     />
+  //     {editingCategory && (
+  //       <EditCategoryDialog
+  //         category={editingCategory}
+  //         isOpen={true}
+  //         onClose={() => setEditingCategory(null)}
+  //         onSave={handleSaveEdit}
+  //       />
+  //     )}
+  //   </div>
+  // );
+
   return (
     <div className="space-y-6 p-6">
       <CategoryStats categories={categories} />
@@ -175,11 +220,7 @@ const CategoryPage = () => {
             className="max-w-sm"
             aria-label="Search categories"
           />
-          <AddCategoryDialog
-            isOpen={isAddDialogOpen}
-            onClose={() => setIsAddDialogOpen(false)}
-            onSave={handleAddCategory}
-          />
+          <Button onClick={() => setIsAddDialogOpen(true)}>Add Category</Button>
         </div>
 
         <DataTable
@@ -194,6 +235,11 @@ const CategoryPage = () => {
         />
       </div>
 
+      <AddCategoryDialog
+        isOpen={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        onSave={handleAddCategory}
+      />
       {editingCategory && (
         <EditCategoryDialog
           category={editingCategory}

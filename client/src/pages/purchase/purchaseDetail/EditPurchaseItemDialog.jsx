@@ -331,7 +331,7 @@ const EditPurchaseItemDialog = ({ isOpen, onClose, purchaseItem }) => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4 mb-4">
               <Label htmlFor="retailerWarrantyDuration" className="text-right">
-                Retailer Warranty (years)
+                Retailer Warranty (months)
               </Label>
               <div className="col-span-3">
                 <Input
@@ -352,7 +352,7 @@ const EditPurchaseItemDialog = ({ isOpen, onClose, purchaseItem }) => {
             </div>
             <div className="grid grid-cols-4 items-center gap-4 mb-4">
               <Label htmlFor="customerWarrantyDuration" className="text-right">
-                Customer Warranty (years)
+                Customer Warranty (months)
               </Label>
               <div className="col-span-3">
                 <Input

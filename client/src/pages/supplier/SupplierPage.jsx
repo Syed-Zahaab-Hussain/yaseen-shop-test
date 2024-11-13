@@ -14,6 +14,7 @@ import { getColumns } from "./SupplierColumns";
 import SupplierStats from "./SupplierStats";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
+import { Button } from "@/components/ui/button";
 
 const SupplierPage = () => {
   const { toast } = useToast();
@@ -163,6 +164,49 @@ const SupplierPage = () => {
     );
   }
 
+  // return (
+  //   <div className="space-y-6 p-6">
+  //     <SupplierStats suppliers={suppliers} />
+
+  //     <div className="bg-white rounded-md shadow-md">
+  //       <div className="flex justify-between p-4">
+  //         <Input
+  //           placeholder="Search all columns..."
+  //           value={globalFilter}
+  //           onChange={handleGlobalFilter}
+  //           className="max-w-sm"
+  //           aria-label="Search suppliers"
+  //         />
+  //         <AddSupplierDialog
+  //           isOpen={isAddDialogOpen}
+  //           onClose={() => setIsAddDialogOpen(false)}
+  //           onSave={handleAddSupplier}
+  //         />
+  //       </div>
+
+  //       <DataTable
+  //         columns={columns}
+  //         data={filteredData}
+  //         pagination
+  //         initialState={{
+  //           pagination: {
+  //             pageSize: 10,
+  //           },
+  //         }}
+  //       />
+  //     </div>
+
+  //     {editingSupplier && (
+  //       <EditSupplierDialog
+  //         supplier={editingSupplier}
+  //         isOpen={true}
+  //         onClose={() => setEditingSupplier(null)}
+  //         onSave={handleSaveEdit}
+  //       />
+  //     )}
+  //   </div>
+  // );
+
   return (
     <div className="space-y-6 p-6">
       <SupplierStats suppliers={suppliers} />
@@ -176,11 +220,7 @@ const SupplierPage = () => {
             className="max-w-sm"
             aria-label="Search suppliers"
           />
-          <AddSupplierDialog
-            isOpen={isAddDialogOpen}
-            onClose={() => setIsAddDialogOpen(false)}
-            onSave={handleAddSupplier}
-          />
+          <Button onClick={() => setIsAddDialogOpen(true)}>Add Supplier</Button>
         </div>
 
         <DataTable
@@ -195,6 +235,11 @@ const SupplierPage = () => {
         />
       </div>
 
+      <AddSupplierDialog
+        isOpen={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        onSave={handleAddSupplier}
+      />
       {editingSupplier && (
         <EditSupplierDialog
           supplier={editingSupplier}

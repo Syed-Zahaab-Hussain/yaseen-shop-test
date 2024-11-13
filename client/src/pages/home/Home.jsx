@@ -67,17 +67,27 @@ function Home() {
     }
   }, [saleError, purchaseError, ledgerError, warrantiesError, toast]);
 
-  const expenseBreakdown =
-    purchases?.map((purchase) => ({
-      product: purchase.purchaseItems[0].product?.name,
-      value: purchase.totalAmount,
-    })) || [];
-
-  // const salesTrends =
-  //   sales?.map((sale) => ({
-  //     date: format(parseISO(sale.createdAt), "MM/dd/yyyy"),
-  //     sales: sale.totalAmount,
+  // const expenseBreakdown =
+  //   purchases?.map((purchase) => ({
+  //     product: purchase.purchaseItems[0].product?.name,
+  //     value: purchase.totalAmount,
   //   })) || [];
+
+  const expenseBreakdown =
+    purchases?.reduce((acc, purchase) => {
+      purchase.purchaseItems.forEach((item) => {
+        const product = item.product?.brand;
+        if (product) {
+          if (!acc[product]) {
+            acc[product] = { product, value: 0 };
+          }
+          acc[product].value += item.unitPrice * item.initialQuantity;
+        }
+      });
+      return acc;
+    }, {}) || [];
+
+  const expenseBreakdownArray = Object.values(expenseBreakdown);
 
   const salesTrends = (sales || []).reduce((acc, sale) => {
     const date = format(parseISO(sale.createdAt), "MM/dd/yyyy");
@@ -103,27 +113,54 @@ function Home() {
     return <LoadingSpinner />;
   }
 
+  // return (
+  //   <div className="p-4 md:p-6">
+  //     <div className="mb-6">
+  //       <DateRangePicker date={dateRange} setDate={setDateRange} />
+  //     </div>
+  //     <StatCards
+  //       sales={sales}
+  //       ledgers={ledgers}
+  //       purchases={purchases}
+  //       claimWarranties={claimWarranties}
+  //       dateRange={dateRange}
+  //     />
+  //     <div className="space-y-4">
+  //       <PieChart data={expenseBreakdown} title="Expense Breakdown" />
+  //       <LineChart
+  //         data={salesTrendsArray}
+  //         title="Sales Trends"
+  //         xAxisLabel="Date"
+  //         yAxisLabel="Amount"
+  //       />
+  //     </div>
+  //   </div>
+  // );
+
   return (
     <div className="p-4 md:p-6">
+      {" "}
       <div className="mb-6">
-        <DateRangePicker date={dateRange} setDate={setDateRange} />
-      </div>
+        {" "}
+        <DateRangePicker date={dateRange} setDate={setDateRange} />{" "}
+      </div>{" "}
       <StatCards
         sales={sales}
         ledgers={ledgers}
         purchases={purchases}
         claimWarranties={claimWarranties}
         dateRange={dateRange}
-      />
+      />{" "}
       <div className="space-y-4">
-        <PieChart data={expenseBreakdown} title="Expense Breakdown" />
+        {" "}
+        <PieChart data={expenseBreakdownArray} title="Expense Breakdown" />{" "}
         <LineChart
           data={salesTrendsArray}
           title="Sales Trends"
           xAxisLabel="Date"
           yAxisLabel="Amount"
-        />
-      </div>
+        />{" "}
+      </div>{" "}
     </div>
   );
 }

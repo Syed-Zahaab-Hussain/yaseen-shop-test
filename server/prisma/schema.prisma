@@ -130,28 +130,23 @@ model Purchase {
 model PurchaseItem {
   id              Int        @id @default(autoincrement())
   purchaseId      Int
-  purchase        Purchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
   productId       Int
-  product         Product    @relation(fields: [productId], references: [id])
-  initialQuantity Int
-  soldQuantity    Int        @default(0)
+  quantity        Int
   unitPrice       Float
-  salePrice       Float
-  barcode         String     @unique
   saleItem        SaleItem[]
   warranty        Warranty?
   isActive        Boolean    @default(true)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   deletedAt       DateTime?
+  purchase        Purchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product         Product    @relation(fields: [productId], references: [id])
 }
 
 model Warranty {
   id                       Int            @id @default(autoincrement())
   saleItemId               Int?           @unique
-  saleItem                 SaleItem?      @relation(fields: [saleItemId], references: [id])
   purchaseItemId           Int?           @unique
-  purchaseItem             PurchaseItem?  @relation(fields: [purchaseItemId], references: [id])
   status                   WarrantyStatus @default(ACTIVE)
   retailerWarrantyDuration Float
   customerWarrantyDuration Float
@@ -159,7 +154,9 @@ model Warranty {
   createdAt                DateTime       @default(now())
   updatedAt                DateTime       @updatedAt
   deletedAt                DateTime?
-  claims                   Claim[] // Multiple claims associated with a warranty
+  claims                   Claim[]
+  saleItem                 SaleItem?      @relation(fields: [saleItemId], references: [id])
+  purchaseItem             PurchaseItem?  @relation(fields: [purchaseItemId], references: [id])
 }
 
 model Claim {

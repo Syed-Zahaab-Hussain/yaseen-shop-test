@@ -36,7 +36,7 @@ const AddPurchaseDialog = ({ isOpen, onClose }) => {
   const initialPurchase = {
     supplierId: "",
     supplier: null,
-    createdAt: format(new Date(), "yyyy-MM-dd"), // Change 'date' to 'createdAt'
+    createdAt: format(new Date(), "yyyy-MM-dd"),
     totalAmount: "",
     paymentMethod: "CASH",
     paidAmount: "",
@@ -373,7 +373,7 @@ const AddPurchaseDialog = ({ isOpen, onClose }) => {
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     type="number"
-                    placeholder="Retailer Warranty (years)"
+                    placeholder="Retailer Warranty (Months)"
                     value={item.retailerWarrantyDuration}
                     onChange={(e) =>
                       handleItemChange(
@@ -385,7 +385,7 @@ const AddPurchaseDialog = ({ isOpen, onClose }) => {
                   />
                   <Input
                     type="number"
-                    placeholder="Customer Warranty (years)"
+                    placeholder="Customer Warranty (Months)"
                     value={item.customerWarrantyDuration}
                     onChange={(e) =>
                       handleItemChange(

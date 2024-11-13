@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,120 +9,146 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { fetchProducts, fetchSuppliers } from "@/lib/api";
 import FilteredDropdown from "@/components/FilteredDropdown";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchLedgerEntries, addLedgerEntry } from "@/lib/api";
 import { Plus, Trash2 } from "lucide-react";
 import { format, formatISO } from "date-fns";
 
-const initialPurchase = {
-  supplierId: "",
-  date: format(new Date(), "yyyy-MM-dd"),
-  totalAmount: "0.00",
-  paymentMethod: "CASH",
-  paidAmount: "0.00",
-  purchaseItems: [],
-  proofOfPurchase: "",
-};
 
-const AddPurchaseDialog = ({ isOpen, onClose, onSave }) => {
+const AddLedgerDialog = ({ isOpen, onClose }) => {
   const { toast } = useToast();
-  const [newPurchase, setNewPurchase] = useState(initialPurchase);
+  const queryClient = useQueryClient();
+  const initialLedger = {
+    entityId: "",
+    entity: null,
+    createdAt: format(new Date(), "yyyy-MM-dd"),
+    ledgerEntries: [
+      {
+        description: "",
+        totalAmount: "",
+        receivedAmount: "",
+      },
+    ],
+  };
+
+  const [ledger, setLedger] = useState(initialLedger);
   const [errors, setErrors] = useState({});
 
-  const { data: products = [], isLoading: isLoadingProducts } = useQuery({
-    queryKey: ["products"],
-    queryFn: fetchProducts,
-  });
-  const { data: suppliers = [], isLoading: isLoadingSuppliers } = useQuery({
-    queryKey: ["suppliers"],
-    queryFn: fetchSuppliers,
+  const { data: entities = [], isLoading: isLoadingEntities } = useQuery({
+    queryKey: ["entities"],
+    queryFn: fetchLedgerEntries,
   });
 
-  const calculateTotal = useMemo(() => {
-    return newPurchase.purchaseItems.reduce(
-      (sum, item) =>
-        sum + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
-      0
-    );
-  }, [newPurchase.purchaseItems]);
+  // Calculate totals
+  const totalAmount = ledger.ledgerEntries.reduce(
+    (sum, entry) => sum + (Number(entry.totalAmount) || 0),
+    0
+  );
 
-  useEffect(() => {
-    setNewPurchase((prev) => ({
+  const totalReceivedAmount = ledger.ledgerEntries.reduce(
+    (sum, entry) => sum + (Number(entry.receivedAmount) || 0),
+    0
+  );
+
+  const remainingAmount = totalAmount - totalReceivedAmount;
+
+  // Add Ledger Mutation
+  const addMutation = useMutation({
+    mutationFn: addLedgerEntry,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ledger"] });
+      toast({ title: "Ledger entry added successfully!" });
+      onClose();
+      setLedger(initialLedger);
+      setErrors({});
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error adding ledger entry",
+        description: error.message,
+      });
+    },
+  });
+
+  const handleAddEntry = () => {
+    setLedger((prev) => ({
       ...prev,
-      totalAmount: calculateTotal.toFixed(2),
-      paidAmount: calculateTotal.toFixed(2),
-    }));
-  }, [calculateTotal]);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewPurchase((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
-
-  const handleSupplierChange = (supplier) => {
-    setNewPurchase((prev) => ({ ...prev, supplierId: supplier.id }));
-    setErrors((prev) => ({ ...prev, supplierId: "" }));
-  };
-
-  const handleAddItem = () => {
-    setNewPurchase((prev) => ({
-      ...prev,
-      purchaseItems: [
-        ...prev.purchaseItems,
+      ledgerEntries: [
+        ...prev.ledgerEntries,
         {
-          productId: "",
-          quantity: "",
-          unitPrice: "",
-          salePrice: "",
-          retailerWarrantyDuration: "",
-          customerWarrantyDuration: "",
+          description: "",
+          totalAmount: "",
+          receivedAmount: "",
         },
       ],
     }));
   };
 
-  const handleRemoveItem = (index) => {
-    setNewPurchase((prev) => ({
+  const handleRemoveEntry = (index) => {
+    setLedger((prev) => ({
       ...prev,
-      purchaseItems: prev.purchaseItems.filter((_, i) => i !== index),
+      ledgerEntries: prev.ledgerEntries.filter((_, i) => i !== index),
     }));
+    const newErrors = { ...errors };
+    delete newErrors[`ledgerEntries.${index}`];
+    setErrors(newErrors);
   };
 
-  const handleItemChange = (index, field, value) => {
-    setNewPurchase((prev) => ({
+  const handleEntryChange = (index, field, value) => {
+    setLedger((prev) => ({
       ...prev,
-      purchaseItems: prev.purchaseItems.map((item, i) =>
-        i === index ? { ...item, [field]: value } : item
+      ledgerEntries: prev.ledgerEntries.map((entry, i) =>
+        i === index ? { ...entry, [field]: value } : entry
       ),
     }));
-    setErrors((prev) => ({ ...prev, [`purchaseItems.${index}.${field}`]: "" }));
+    setErrors((prev) => ({
+      ...prev,
+      [`ledgerEntries.${index}.${field}`]: undefined,
+    }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!newPurchase.supplierId) newErrors.supplierId = "Supplier is required";
-    if (!newPurchase.date) newErrors.date = "Date is required";
-    // if (Number(newPurchase.paidAmount) > Number(newPurchase.totalAmount)) {
-    //   newErrors.paidAmount = "Paid amount cannot exceed total amount";
-    // }
-    if (newPurchase.purchaseItems.length === 0) {
-      newErrors.purchaseItems = "At least one item is required";
+
+    if (!ledger.entity) {
+      newErrors.entity = "Entity is required";
     }
-    newPurchase.purchaseItems.forEach((item, index) => {
-      if (!item.productId)
-        newErrors[`purchaseItems.${index}.productId`] = "Product is required";
-      if (!item.quantity || Number(item.quantity) <= 0)
-        newErrors[`purchaseItems.${index}.quantity`] =
-          "Valid quantity is required";
-      if (!item.unitPrice || Number(item.unitPrice) <= 0)
-        newErrors[`purchaseItems.${index}.unitPrice`] =
-          "Valid unit price is required";
+    if (!ledger.createdAt) {
+      newErrors.createdAt = "Date is required";
+    }
+
+    ledger.ledgerEntries.forEach((entry, index) => {
+      const entryErrors = {};
+      if (!entry.description)
+        entryErrors.description = "Description is required";
+      if (!entry.totalAmount || Number(entry.totalAmount) <= 0)
+        entryErrors.totalAmount = "Valid total amount is required";
+      if (
+        !entry.receivedAmount ||
+        Number(entry.receivedAmount) < 0 ||
+        Number(entry.receivedAmount) > Number(entry.totalAmount)
+      )
+        entryErrors.receivedAmount = "Valid received amount is required";
+
+      if (Object.keys(entryErrors).length > 0) {
+        newErrors[`ledgerEntries.${index}`] = entryErrors;
+      }
     });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleEntitySelect = (selectedEntity) => {
+    setLedger((prev) => ({
+      ...prev,
+      entity: selectedEntity,
+      entityId: selectedEntity.id,
+    }));
+    setErrors((prev) => ({ ...prev, entity: undefined }));
   };
 
   const handleSave = () => {
@@ -130,139 +156,27 @@ const AddPurchaseDialog = ({ isOpen, onClose, onSave }) => {
       toast({
         variant: "destructive",
         title: "Validation Error",
-        description: "Please correct the errors in the form",
+        description: "Please check the form for errors",
       });
       return;
     }
 
-    const formattedPurchase = {
-      ...newPurchase,
-      date: formatISO(new Date(newPurchase.date)),
-      supplierId: parseInt(newPurchase.supplierId),
-      totalAmount: parseFloat(newPurchase.totalAmount),
-      paidAmount: parseFloat(newPurchase.paidAmount),
-      purchaseItems: newPurchase.purchaseItems.map((item) => ({
-        ...item,
-        productId: parseInt(item.productId),
-        quantity: parseInt(item.quantity),
-        unitPrice: parseFloat(item.unitPrice),
-        salePrice: parseFloat(item.salePrice),
-        retailerWarrantyDuration: parseFloat(item.retailerWarrantyDuration),
-        customerWarrantyDuration: parseFloat(item.customerWarrantyDuration),
+    const formattedLedger = {
+      entityId: parseInt(ledger.entityId),
+      date: formatISO(new Date(ledger.createdAt)),
+      ledgerEntries: ledger.ledgerEntries.map((entry) => ({
+        description: entry.description,
+        totalAmount: parseFloat(entry.totalAmount),
+        receivedAmount: parseFloat(entry.receivedAmount),
+        remainingAmount:
+          parseFloat(entry.totalAmount) - parseFloat(entry.receivedAmount),
       })),
     };
 
-    onSave(formattedPurchase);
-    onClose();
+    addMutation.mutate(formattedLedger);
   };
 
-  const renderField = (label, name, type = "text", options = null) => (
-    <div className="grid grid-cols-4 items-center gap-4">
-      <Label htmlFor={name} className="text-right">
-        {label}
-      </Label>
-      {options ? (
-        <select
-          id={name}
-          name={name}
-          value={newPurchase[name]}
-          onChange={handleInputChange}
-          className={`col-span-3 ${errors[name] ? "border-red-500" : ""}`}
-        >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <Input
-          id={name}
-          name={name}
-          type={type}
-          value={newPurchase[name]}
-          onChange={handleInputChange}
-          className={`col-span-3 ${errors[name] ? "border-red-500" : ""}`}
-          readOnly={name === "totalAmount"}
-        />
-      )}
-      {errors[name] && (
-        <p className="text-red-500 text-sm col-start-2 col-span-3">
-          {errors[name]}
-        </p>
-      )}
-    </div>
-  );
-
-  const renderPurchaseItem = (item, index) => (
-    <div key={index} className="grid grid-cols-12 gap-2 mb-4">
-      <div className="col-span-12 mb-2">
-        <FilteredDropdown
-          items={products}
-          value={products.find((p) => p.id === item.productId) || null}
-          onChange={(product) =>
-            handleItemChange(index, "productId", product.id)
-          }
-          displayField="name"
-          idField="id"
-          placeholder="Select product"
-          className={
-            errors[`purchaseItems.${index}.productId`] ? "border-red-500" : ""
-          }
-        />
-        {errors[`purchaseItems.${index}.productId`] && (
-          <p className="text-red-500 text-sm">
-            {errors[`purchaseItems.${index}.productId`]}
-          </p>
-        )}
-      </div>
-      <div className="col-span-12 grid grid-cols-3 gap-2">
-        {["quantity", "unitPrice", "salePrice"].map((field) => (
-          <div key={field}>
-            <Input
-              type="number"
-              value={item[field]}
-              onChange={(e) => handleItemChange(index, field, e.target.value)}
-              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-              className={
-                errors[`purchaseItems.${index}.${field}`]
-                  ? "border-red-500"
-                  : ""
-              }
-            />
-            {errors[`purchaseItems.${index}.${field}`] && (
-              <p className="text-red-500 text-sm">
-                {errors[`purchaseItems.${index}.${field}`]}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="col-span-12 grid grid-cols-2 gap-2">
-        {["retailerWarrantyDuration", "customerWarrantyDuration"].map(
-          (field) => (
-            <Input
-              key={field}
-              type="number"
-              value={item[field]}
-              onChange={(e) => handleItemChange(index, field, e.target.value)}
-              placeholder={field.replace(/([A-Z])/g, " $1").trim()}
-            />
-          )
-        )}
-      </div>
-      <Button
-        variant="destructive"
-        size="icon"
-        onClick={() => handleRemoveItem(index)}
-        className="col-span-12 mt-2"
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
-    </div>
-  );
-
-  if (isLoadingProducts || isLoadingSuppliers) {
+  if (isLoadingEntities) {
     return <div>Loading...</div>;
   }
 
@@ -270,56 +184,165 @@ const AddPurchaseDialog = ({ isOpen, onClose, onSave }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Purchase</DialogTitle>
+          <DialogTitle>Add Ledger Entry</DialogTitle>
         </DialogHeader>
+{console.log(ledger)}
         <div className="grid gap-4 py-4">
+          {/* Entity Selection */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="supplier" className="text-right">
-              Supplier
+            <Label htmlFor="entity" className="text-right">
+              Entity
             </Label>
             <div className="col-span-3">
               <FilteredDropdown
-                items={suppliers}
-                value={
-                  suppliers.find((s) => s.id === newPurchase.supplierId) || null
-                }
-                onChange={handleSupplierChange}
+                items={entities}
+                value={ledger?.entity?.name}
+                onChange={handleEntitySelect}
                 displayField="name"
-                idField="id"
-                placeholder="Select supplier"
-                className={errors.supplierId ? "border-red-500" : ""}
+                placeholder="Select entity"
+                error={!!errors.entity}
               />
-              {errors.supplierId && (
-                <p className="text-red-500 text-sm">{errors.supplierId}</p>
+              {errors.entity && (
+                <p className="text-sm text-red-500 mt-1">{errors.entity}</p>
               )}
             </div>
           </div>
-          {renderField("Date", "date", "date")}
-          {renderField("Total Amount", "totalAmount", "number")}
-          {renderField("Payment Method", "paymentMethod", "select", [
-            { value: "CASH", label: "Cash" },
-            { value: "CREDIT_CARD", label: "Credit Card" },
-            { value: "BANK_TRANSFER", label: "Bank Transfer" },
-            { value: "DIGITAL_WALLET", label: "Digital Wallet" },
-          ])}
-          {renderField("Paid Amount", "paidAmount", "number")}
-          {renderField("Proof of Purchase", "proofOfPurchase")}
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold mb-2">Purchase Items</h3>
-            {newPurchase.purchaseItems.map(renderPurchaseItem)}
-            <Button onClick={handleAddItem} className="mt-2">
-              <Plus className="h-4 w-4 mr-2" /> Add Item
-            </Button>
-            {errors.purchaseItems && (
-              <p className="text-red-500 text-sm mt-2">
-                {errors.purchaseItems}
+
+          {/* Date Field */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label className="text-right">Date</Label>
+            <Input
+              type="date"
+              value={ledger.createdAt}
+              onChange={(e) => {
+                setLedger((prev) => ({ ...prev, createdAt: e.target.value }));
+                setErrors((prev) => ({ ...prev, createdAt: undefined }));
+              }}
+              className={`col-span-3 ${
+                errors.createdAt ? "border-red-500" : ""
+              }`}
+            />
+            {errors.createdAt && (
+              <p className="text-sm text-red-500 col-start-2 col-span-3">
+                {errors.createdAt}
               </p>
             )}
           </div>
+
+          {/* Ledger Entries */}
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold mb-2">Ledger Entries</h3>
+
+            {ledger.ledgerEntries.map((entry, index) => (
+              <div
+                key={index}
+                className="grid gap-4 mb-4 p-4 border rounded-lg"
+              >
+                <div>
+                  <Label>Description</Label>
+                  <Input
+                    value={entry.description}
+                    onChange={(e) =>
+                      handleEntryChange(index, "description", e.target.value)
+                    }
+                    placeholder="Enter description"
+                    className={
+                      errors[`ledgerEntries.${index}`]?.description
+                        ? "border-red-500"
+                        : ""
+                    }
+                  />
+                  {errors[`ledgerEntries.${index}`]?.description && (
+                    <p className="text-sm text-red-500 mt-1">
+                      {errors[`ledgerEntries.${index}`].description}
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Total Amount</Label>
+                    <Input
+                      type="number"
+                      value={entry.totalAmount}
+                      onChange={(e) =>
+                        handleEntryChange(index, "totalAmount", e.target.value)
+                      }
+                      placeholder="Enter total amount"
+                      className={
+                        errors[`ledgerEntries.${index}`]?.totalAmount
+                          ? "border-red-500"
+                          : ""
+                      }
+                    />
+                    {errors[`ledgerEntries.${index}`]?.totalAmount && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {errors[`ledgerEntries.${index}`].totalAmount}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label>Received Amount</Label>
+                    <Input
+                      type="number"
+                      value={entry.receivedAmount}
+                      onChange={(e) =>
+                        handleEntryChange(
+                          index,
+                          "receivedAmount",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Enter received amount"
+                      className={
+                        errors[`ledgerEntries.${index}`]?.receivedAmount
+                          ? "border-red-500"
+                          : ""
+                      }
+                    />
+                    {errors[`ledgerEntries.${index}`]?.receivedAmount && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {errors[`ledgerEntries.${index}`].receivedAmount}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <Button
+                  variant="destructive"
+                  onClick={() => handleRemoveEntry(index)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" /> Remove Entry
+                </Button>
+              </div>
+            ))}
+
+            <Button onClick={handleAddEntry} className="mt-2">
+              <Plus className="h-4 w-4 mr-2" /> Add Entry
+            </Button>
+          </div>
+
+          {/* Totals */}
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div>
+              <Label>Total Amount</Label>
+              <Input type="number" value={totalAmount} readOnly />
+            </div>
+            <div>
+              <Label>Total Received</Label>
+              <Input type="number" value={totalReceivedAmount} readOnly />
+            </div>
+            <div className="col-span-2">
+              <Label>Remaining Amount</Label>
+              <Input type="number" value={remainingAmount} readOnly />
+            </div>
+          </div>
         </div>
+
         <DialogFooter>
-          <Button type="submit" onClick={handleSave}>
-            Add Purchase
+          <Button onClick={handleSave} disabled={addMutation.isPending}>
+            {addMutation.isPending ? "Adding..." : "Add Ledger Entry"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -327,4 +350,4 @@ const AddPurchaseDialog = ({ isOpen, onClose, onSave }) => {
   );
 };
 
-export default AddPurchaseDialog;
+export default AddLedgerDialog;

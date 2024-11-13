@@ -1,6 +1,6 @@
 import { Barcode, Pencil, Trash } from "lucide-react";
 import DynamicDropdownMenu from "@/components/DynamicDropdownMenu";
-import { addYears, format, isValid, parseISO } from "date-fns";
+import { addMonths, format, isValid, parseISO } from "date-fns";
 import { toast } from "@/hooks/use-toast";
 import JsBarcode from "jsbarcode";
 import jsPDF from "jspdf";
@@ -103,12 +103,12 @@ export const getColumns = ({ onEdit, onDelete, onWarrantyClaim }) => [
   },
   {
     accessorKey: "retailerWarrantyDuration",
-    header: "Retailer Warranty (Years)",
+    header: "Retailer Warranty (Months)",
     cell: ({ row }) => {
       try {
         const warrantyDuration =
           row.original?.warranty?.retailerWarrantyDuration;
-        return warrantyDuration ? `${warrantyDuration} Years` : "-";
+        return warrantyDuration ? `${warrantyDuration} Months` : "-";
       } catch (error) {
         console.error("Error displaying warranty duration:", error);
         return "-";
@@ -130,7 +130,7 @@ export const getColumns = ({ onEdit, onDelete, onWarrantyClaim }) => [
         if (!isValid(startDate)) return "-";
 
         const warrantyEndDate = format(
-          addYears(startDate, warrantyDuration),
+          addMonths(startDate, warrantyDuration),
           "dd MMMM yyyy"
         );
         return warrantyEndDate || "-";

@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, Plus, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Plus, AlertTriangle, Barcode } from "lucide-react";
 import { DataTable } from "@/components/DataTable";
 import { getColumns } from "./PurchaseDetailColumns";
 import ConfirmationAlert from "@/components/ConfirmationAlert";
@@ -30,6 +30,7 @@ import EditPurchaseItemDialog from "./EditPurchaseItemDialog";
 import WarrantyClaimDialog from "@/components/WarrantyClaimDialog";
 import { LoadingSpinner } from "@/components/LoadingSpinner";
 import { StackedBarChart } from "@/components/charts/Charts";
+import { generateBulkBarcodes } from "@/lib/generateBulkBarcodes";
 
 const PurchaseDetailPage = () => {
   const { id } = useParams();
@@ -274,9 +275,25 @@ const PurchaseDetailPage = () => {
               Manage and track all items in this purchase
             </CardDescription>
           </div>
-          <Button onClick={() => setIsAddingItem(true)}>
-            <Plus className="h-4 w-4 mr-2" /> Add Item
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                generateBulkBarcodes(purchase.purchaseItems).catch((error) => {
+                  toast({
+                    variant: "destructive",
+                    title: "Failed to generate barcodes",
+                    description: error.message,
+                  });
+                });
+              }}
+            >
+              <Barcode className="h-4 w-4 mr-2" /> Generate All Barcodes
+            </Button>
+            <Button onClick={() => setIsAddingItem(true)}>
+              <Plus className="h-4 w-4 mr-2" /> Add Item
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <DataTable columns={columns} data={purchase.purchaseItems || []} />

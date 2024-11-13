@@ -66,6 +66,9 @@ router.get("/get/all", async (req, res) => {
       },
     });
 
+    // Collect warranties to update
+    const warrantiesToUpdate = [];
+
     // Check and update warranty status for each purchase item
     for (const purchase of purchases) {
       for (const item of purchase.purchaseItems) {
@@ -74,30 +77,30 @@ router.get("/get/all", async (req, res) => {
           const retailerWarrantyDuration =
             item.warranty.retailerWarrantyDuration;
 
-          // Calculate warranty end date
+          // Calculate warranty end date based on months
           const warrantyEndDate = new Date(purchaseDate);
           warrantyEndDate.setMonth(
             warrantyEndDate.getMonth() + Math.floor(retailerWarrantyDuration)
           );
 
-          // If current date is past warranty end date, update warranty status
+          // Update if the warranty has expired
           if (new Date() > warrantyEndDate) {
-            await prisma.warranty.update({
-              where: {
-                id: item.warranty.id,
-              },
-              data: {
-                status: "EXPIRED",
-              },
-            });
-
-            // Update the warranty status in the current response data
+            warrantiesToUpdate.push(item.warranty.id);
             item.warranty.status = "EXPIRED";
           }
         }
       }
     }
-    // console.log(purchases);
+
+    // Update warranties in batch if there are any expired
+    if (warrantiesToUpdate.length > 0) {
+      await prisma.warranty.updateMany({
+        where: {
+          id: { in: warrantiesToUpdate },
+        },
+        data: { status: "EXPIRED" },
+      });
+    }
 
     res.json(purchases || []);
   } catch (error) {
@@ -105,6 +108,7 @@ router.get("/get/all", async (req, res) => {
     res.status(500).json({ error: "Error fetching purchases" });
   }
 });
+
 
 router.get("/get/:id", async (req, res) => {
   try {
